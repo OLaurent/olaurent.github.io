@@ -5,35 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flask TODOs</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
 </head>
 <body>
-    <div class="section hero">
-        <div class="box">
-            <h1 class="title is-1 has-text-centered">Flask TODOs</h1>
-            <form action="/create_todo" method="POST">
-                <div class="field has-addons">
-                    <div class="control">
-                        <input class="input" type="text" name="title" placeholder="Enter a new task">
-                    </div>
-                    <div class="control">
-                        <button class="button is-primary" type="submit">Add Task</button>
-                    </div>
-                </div>
-            </form>
-            <ul>
-                {% for todo in todos %}
-                    <li class="columns">
-                        <div class="column">
-                            <a href="/update_todo/{{ todo.id }}" class="{{ 'has-text-grey-light' if todo.done else '' }}">{{ todo.title }}</a>
-                        </div>
-                        <div class="column is-narrow">
-                                <a href="/delete_todo/{{ todo.id }}" class="delete" type="submit">Delete</a>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
+    <section class="hero is-primary is-bold">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title has-text-centered">Serveur d'exercices</h1>
+            </div>
         </div>
-    </div>
+    </section>
 
+    <section class="section">
+        <div class="container">
+            <div class="box">
+                <h2 class="title is-2 has-text-centered">Exercices</h2>
+                <div class="columns is-multiline">
+                    <form method="GET" action="">
+                        <div class="field">
+                            <label class="label">Choisir niveau</label>
+                            <div class="control">
+                                <div class="field"></div>
+                                    <input class="is-checkradio" id="level-seconde" type="radio" name="level" value="Seconde" onchange="this.form.submit()">
+                                    <label for="level-seconde">Seconde</label>
+                                </div>
+                                <div class="field">
+                                    <input class="is-checkradio" id="level-premiere" type="radio" name="level" value="Première" onchange="this.form.submit()">
+                                    <label for="level-premiere">Première</label>
+                                </div>
+                                <div class="field">
+                                    <input class="is-checkradio" id="level-terminale" type="radio" name="level" value="Terminale" onchange="this.form.submit()">
+                                    <label for="level-terminale">Terminale</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% for exercice in exercices if exercice.level == request.args.get('level', 'beginner') %}
+                    <div class="column">
+                        <div class="box">
+                            <div class="field is-grouped is-grouped-multiline">
+                                <div class="control">
+                                  <div class="tags has-addons">
+                                    <span class="tag is-dark">Niveau</span>
+                                    <span class="tag is-success">{{ exercice.level }}</span>
+                                  </div>
+                                </div>
+                                <div class="control">
+                                  <div class="tags has-addons">
+                                    <span class="tag is-dark">Thème</span>
+                                    <span class="tag is-success">{{ exercice.theme }}</span>
+                                  </div>
+                                </div>
+                                <div class="control" style="margin-left: auto;">
+                                  <button class="button {{ 'is-danger' if exercice.selected else 'is-success is-outlined' }}">
+                                    <span class="icon is-small">
+                                      <i class="fas {{ 'fa-times' if exercice.selected else 'fa-check' }}"></i>
+                                    </span>
+                                    <span>{{ 'Supprimer' if exercice.selected else 'Enregistrer' }}</span>
+                                  </button>
+                                </div>
+                            </div>
+                            <div class="content">{{ exercice.content | safe }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
 </body>
 </html>
