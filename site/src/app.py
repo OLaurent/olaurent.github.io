@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -14,7 +14,9 @@ from models import Exercice
 @app.route('/')
 def home():
     exercices = Exercice.query.all()
-    return render_template('index.html', exercices=exercices)
+    selected_exercises = session.get('selected_exercises', [])
+    return render_template('index.html', exercices=exercices, selected_exercises=selected_exercises)
+
 
 @app.route('/edit_exercise', methods=['GET', 'POST'])
 def edit_exercise():
@@ -33,15 +35,29 @@ def edit_exercise():
         exercice.correction = request.form.get('correction')
         exercice.latex_correction = request.form.get('latex_correction')
         db.session.commit()
-        flash('Exercice mis à jour avec succès.', 'success')
         return redirect(url_for('home'))
     else:
         exercice_id = request.args.get('id')
         exercice = Exercice.query.get(exercice_id)
         if exercice is None:
-            flash('Exercice non trouvé.', 'error')
             return redirect(url_for('home'))
         return render_template('edit_exercise.html', exercice=exercice)
+
+
+@app.route('/select_exercise', methods=['POST'])
+def select_exercise():
+    exercice_id = request.form.get('id')
+    print('Exercice sélectionné:', exercice_id)
+    selected_exercises = session.get('selected_exercises', [])
+    if exercice_id in selected_exercises:
+        selected_exercises.remove(exercice_id)
+    else:
+        selected_exercises.append(exercice_id)
+    session['selected_exercises'] = selected_exercises
+
+    print('Exercices sélectionnés:', selected_exercises)
+    return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

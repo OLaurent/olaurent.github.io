@@ -68,7 +68,7 @@
                         <div class="field">
                             <div class="control has-text-centered">
                                 <div class="select">
-                                    <select id="themeFilter" onchange="window.location.href='?theme='+this.value">
+                                    <select id="themeFilter" onchange="window.location.href='?level={{ request.args.get('level') }}&theme='+this.value">
                                         <option value="all" {{ 'selected' if not request.args.get('theme') or request.args.get('theme') == 'all' }}>Tous les thèmes</option>
                                         {% set unique_themes = [] %}
                                         {% for exercise in exercices %}
@@ -101,13 +101,26 @@
                                                 <span class="tag is-success">{{ exercice.theme }}</span>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="field is-pulled-right">
-                                        <a class="button is-small is-warning" href="/edit_exercise?id={{ exercice.id }}">
-                                            <span class="icon is-small">
-                                                <i class="fas fa-edit"></i>
-                                            </span>
-                                        </a>
+                                        <div class="field is-pulled-right">
+                                            <a class="button is-small is-warning" href="/edit_exercise?id={{ exercice.id }}">
+                                                <span class="icon is-small">
+                                                    <i class="fas fa-edit"></i>
+                                                </span>
+                                            </a>
+                                        </div>
+                                        <div class="field is-pulled-right">
+                                            <form action="/select_exercise" method="post" style="display:inline;">
+                                                <input type="hidden" name="id" value="{{ exercice.id }}">
+                                                <div class="tags has-addons">
+                                                    <span class="tag is-dark">Select</span>
+                                                    <button class="button is-small is-light" type="submit">
+                                                        <span class="icon is-small">
+                                                            <i class="fas {{ 'fa-times' if exercice.id in selected_exercises else 'fa-check' }}"></i>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                     <div class="content">{{ exercice.content | safe }}</div>
                                     <div class="field">
