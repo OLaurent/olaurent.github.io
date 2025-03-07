@@ -1,0 +1,20 @@
+# Fdb version 4
+["xdvipdfmx"] 0 "temporary.xdv" "temporary.pdf" "temporary" 0 -1
+  "temporary.xdv" 1741358473.51726 3096 f6482670b335f6203f808150a7a5db33 "xelatex"
+  (generated)
+  "temporary.pdf"
+  (rewritten before read)
+["xelatex"] 1741358473.15835 "/Users/olivierlaurent/Documents/Travail Olivier/Git/olaurent.github.io/temporary_latex/temporary.tex" "temporary.xdv" "temporary" 1741358473.56889 2
+  "/Users/olivierlaurent/Documents/Travail Olivier/Git/olaurent.github.io/temporary_latex/temporary.tex" 1741358469.58995 687 c75036a92bd54366a19a95a85932f670 ""
+  "/usr/local/texlive/2024/texmf-dist/tex/latex/base/ts1cmr.fd" 1705352648 2430 fce77d7e103eb98b6c4d486ae1d466c0 ""
+  "/usr/local/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-xetex.def" 1708463273 31815 59e639f95c4a3bc971cad46c02998fac ""
+  "/usr/local/texlive/2024/texmf-dist/web2c/texmf.cnf" 1708706663 41649 5d6ae549fbbcb850a863f69aa41f3d10 ""
+  "/usr/local/texlive/2024/texmf-var/web2c/xetex/xelatex.fmt" 1726234690 10850170 e36e1c7861c00341fb64c805a463585c ""
+  "/usr/local/texlive/2024/texmf.cnf" 1710266656 577 e590dabc9e28c5b61546e15f63eebcdf ""
+  "temporary.aux" 1741358473.51646 32 3985256e7290058c681f74d7a3565a19 "xelatex"
+  "temporary.tex" 1741358469.58995 687 c75036a92bd54366a19a95a85932f670 ""
+  (generated)
+  "temporary.aux"
+  "temporary.log"
+  "temporary.xdv"
+  (rewritten before read)

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditer un exercice</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+</head>
+<body>
+    <section class="hero is-primary is-bold">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title has-text-centered">Éditer un exercice</h1>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <form action="/edit_exercise" method="POST">
+                <div class="field">
+                    <label class="label">ID</label>
+                    <div class="control">
+                        <input class="input" type="text" name="id" value="{{ exercice.id }}" readonly>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Niveau</label>
+                    <div class="control">
+                        <input class="input" type="text" name="level" value="{{ exercice.level }}">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Thème</label>
+                    <div class="control">
+                        <input class="input" type="text" name="theme" value="{{ exercice.theme }}">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Contenu</label>
+                    <div class="control">
+                        <textarea class="textarea" name="content">{{ exercice.content }}</textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Code LaTeX</label>
+                    <div class="control">
+                        <textarea class="textarea" name="latex_code">{{ exercice.latex_code }}</textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Correction</label>
+                    <div class="control">
+                        <textarea class="textarea" name="correction">{{ exercice.correction }}</textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Correction LaTeX</label>
+                    <div class="control">
+                        <textarea class="textarea" name="latex_correction">{{ exercice.latex_correction }}</textarea>
+                    </div>
+                </div>
+
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button class="button is-link" type="submit">Enregistrer</button>
+                    </div>
+                    <div class="control">
+                        <a class="button is-light" href="/">Annuler</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+</html>

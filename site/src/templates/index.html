@@ -28,91 +28,105 @@
 
     <section class="section">
         <div class="container">
-            <div class="box">
-                <div class="tabs is-centered is-boxed">
-                    <ul>
-                        <li class="{{ 'is-active' if request.args.get('level') == 'Seconde' or not request.args.get('level') }}">
-                            <a href="?level=Seconde">
-                                <span class="icon is-small"><i class="fas fa-graduation-cap"></i></span>
-                                <span>Seconde</span>
-                            </a>
-                        </li>
-                        <li class="{{ 'is-active' if request.args.get('level') == 'Première' }}">
-                            <a href="?level=Première">
-                                <span class="icon is-small"><i class="fas fa-book"></i></span>
-                                <span>Première</span>
-                            </a>
-                        </li>
-                        <li class="{{ 'is-active' if request.args.get('level') == 'Terminale' }}">
-                            <a href="?level=Terminale">
-                                <span class="icon is-small"><i class="fas fa-award"></i></span>
-                                <span>Terminale</span>
-                            </a>
-                        </li>
-                    </ul>
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <aside class="menu">
+                        <p class="menu-label">
+                            Navigation
+                        </p>
+                        <ul class="menu-list">
+                            <li><a href="/">Accueil</a></li>
+                            <li><a href="/edit_exercise">Éditer un exercice</a></li>
+                        </ul>
+                    </aside>
                 </div>
-                
-
-                    <div class="field">
-                        <div class="control has-text-centered">
-                            <div class="select">
-                                <select id="themeFilter" onchange="window.location.href='?level={{ request.args.get('level') }}&theme='+this.value">
-                                    <option value="all" {{ 'selected' if not request.args.get('theme') or request.args.get('theme') == 'all' }}>Tous les thèmes</option>
-                                    {% set unique_themes = [] %}
-                                    {% for exercise in exercices %}
-                                        {% if exercise.theme not in unique_themes %}
-                                            {% set _ = unique_themes.append(exercise.theme) %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% for theme in unique_themes | sort %}
-                                    <option value="{{ theme }}" {{ 'selected' if request.args.get('theme') == theme }}>{{ theme }}</option>
-                                    {% endfor %}
-                                </select>
+                <div class="column">
+                    <div class="box">
+                        <div class="tabs is-centered is-boxed">
+                            <ul>
+                                <li class="{{ 'is-active' if request.args.get('level') == 'Seconde' or not request.args.get('level') }}">
+                                    <a href="?level=Seconde">
+                                        <span class="icon is-small"><i class="fas fa-graduation-cap"></i></span>
+                                        <span>Seconde</span>
+                                    </a>
+                                </li>
+                                <li class="{{ 'is-active' if request.args.get('level') == 'Première' }}">
+                                    <a href="?level=Première">
+                                        <span class="icon is-small"><i class="fas fa-book"></i></span>
+                                        <span>Première</span>
+                                    </a>
+                                </li>
+                                <li class="{{ 'is-active' if request.args.get('level') == 'Terminale' }}">
+                                    <a href="?level=Terminale">
+                                        <span class="icon is-small"><i class="fas fa-award"></i></span>
+                                        <span>Terminale</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="field">
+                            <div class="control has-text-centered">
+                                <div class="select">
+                                    <select id="themeFilter" onchange="window.location.href='?theme='+this.value">
+                                        <option value="all" {{ 'selected' if not request.args.get('theme') or request.args.get('theme') == 'all' }}>Tous les thèmes</option>
+                                        {% set unique_themes = [] %}
+                                        {% for exercise in exercices %}
+                                            {% if exercise.theme not in unique_themes %}
+                                                {% set _ = unique_themes.append(exercise.theme) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% for theme in unique_themes | sort %}
+                                        <option value="{{ theme }}" {{ 'selected' if request.args.get('theme') == theme }}>{{ theme }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="columns is-multiline">
-                    {% for exercice in exercices if exercice.level == request.args.get('level', 'Seconde') and (not request.args.get('theme') or request.args.get('theme') == 'all' or exercice.theme == request.args.get('theme')) %}
-                    <div class="column">
-                        <div class="box">
-                            <div class="field is-grouped is-grouped-multiline">
-                                <div class="control">
-                                  <div class="tags has-addons">
-                                    <span class="tag is-dark">Niveau</span>
-                                    <span class="tag is-success">{{ exercice.level }}</span>
-                                  </div>
-                                </div>
-                                <div class="control">
-                                  <div class="tags has-addons">
-                                    <span class="tag is-dark">Thème</span>
-                                    <span class="tag is-success">{{ exercice.theme }}</span>
-                                  </div>
-                                </div>
-                                <div class="control" style="margin-left: auto;">
-                                  <button class="button {{ 'is-danger' if exercice.selected else 'is-success is-outlined' }}">
-                                    <span class="icon is-small">
-                                      <i class="fas {{ 'fa-times' if exercice.selected else 'fa-check' }}"></i>
-                                    </span>
-                                    <span>{{ 'Supprimer' if exercice.selected else 'Enregistrer' }}</span>
-                                  </button>
+                        <div class="columns is-multiline">
+                            {% for exercice in exercices if exercice.level == request.args.get('level', 'Seconde') and (not request.args.get('theme') or request.args.get('theme') == 'all' or exercice.theme == request.args.get('theme')) %}
+                            <div class="column is-full">
+                                <div class="box">
+                                    <div class="field is-grouped is-grouped-multiline">
+                                        <div class="control">
+                                            <div class="tags has-addons">
+                                                <span class="tag is-dark">Niveau</span>
+                                                <span class="tag is-success">{{ exercice.level }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="control">
+                                            <div class="tags has-addons">
+                                                <span class="tag is-dark">Thème</span>
+                                                <span class="tag is-success">{{ exercice.theme }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="field is-pulled-right">
+                                        <a class="button is-small is-warning" href="/edit_exercise?id={{ exercice.id }}">
+                                            <span class="icon is-small">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                        </a>
+                                    </div>
+                                    <div class="content">{{ exercice.content | safe }}</div>
+                                    <div class="field">
+                                        <button class="button is-info" onclick="document.getElementById('correction-{{ loop.index }}').classList.toggle('is-hidden')">
+                                            <span class="icon is-small">
+                                                <i class="fas fa-eye"></i>
+                                            </span>
+                                            <span>Afficher/Masquer Correction</span>
+                                        </button>
+                                    </div>
+                                    <div id="correction-{{ loop.index }}" class="content is-hidden">
+                                        {{ exercice.correction | safe }}
+                                    </div>
+                                    
                                 </div>
                             </div>
-                            <div class="content">{{ exercice.content | safe }}</div>
-                            <div class="field">
-                                <button class="button is-info" onclick="document.getElementById('correction-{{ loop.index }}').classList.toggle('is-hidden')">
-                                    <span class="icon is-small">
-                                        <i class="fas fa-eye"></i>
-                                    </span>
-                                    <span>Afficher/Masquer Correction</span>
-                                </button>
-                            </div>
-                            <div id="correction-{{ loop.index }}" class="content is-hidden">
-                                {{ exercice.correction | safe }}
-                            </div></span></button></div>
+                            {% endfor %}
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>

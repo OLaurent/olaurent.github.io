@@ -1,0 +1,17 @@
+PWD /Users/olivierlaurent/Documents/Travail Olivier/Git/olaurent.github.io/temporary_latex
+INPUT /usr/local/texlive/2024/texmf.cnf
+INPUT /usr/local/texlive/2024/texmf-dist/web2c/texmf.cnf
+INPUT /usr/local/texlive/2024/texmf-var/web2c/xetex/xelatex.fmt
+INPUT /Users/olivierlaurent/Documents/Travail Olivier/Git/olaurent.github.io/temporary_latex/temporary.tex
+OUTPUT temporary.log
+INPUT /usr/local/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-xetex.def
+INPUT /usr/local/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-xetex.def
+INPUT ./temporary.aux
+INPUT ./temporary.aux
+INPUT temporary.aux
+OUTPUT temporary.aux
+INPUT /usr/local/texlive/2024/texmf-dist/tex/latex/base/ts1cmr.fd
+INPUT /usr/local/texlive/2024/texmf-dist/tex/latex/base/ts1cmr.fd
+INPUT /usr/local/texlive/2024/texmf-dist/tex/latex/base/ts1cmr.fd
+OUTPUT temporary.xdv
+INPUT temporary.aux
