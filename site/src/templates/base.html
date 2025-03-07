@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Serveur exercices{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <section class="hero is-primary is-bold">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title has-text-centered">Serveur d'exercices</h1>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <aside class="menu">
+                        <p class="menu-label">
+                            Navigation
+                        </p>
+                        <ul class="menu-list">
+                            <li><a href="/">Accueil</a></li>
+                            <li><a href="/edit_exercise">Éditer un exercice</a></li>
+                            <li><a href="/export_menu">Exporter les exercices</a></li>
+                        </ul>
+                    </aside>
+                </div>
+                <div class="column">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
