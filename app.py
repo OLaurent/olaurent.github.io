@@ -74,8 +74,21 @@ exercices = [
             \item Résoudre l'inéquation $2n-10\geqslant 0$ et en déduire que la suite $(v_n)$ est monotone à partir d'un certain rang que l'on précisera.
         \end{enumerate}
         """
+    },
+    {
+        "id": str(uuid.uuid4()),
+        "level": "Première",
+        "theme": "Dérivation",
+        "selected" : False, 
+        "content": r"""
+        <p>Un exercice bidon de dérivation.</p>
+        """,
+        "latexCode": r"""
+        Un exercice bidon de dérivation.
+        """
     }
 ]
+
 
 
 
