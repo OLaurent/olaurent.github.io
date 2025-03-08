@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% set dev_mode = true %} 
+
 {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,12 +31,15 @@
                     if (response.ok) {
                         // Optionally, update the UI to reflect the change
                         const icon = form.querySelector('i');
+                        const box = form.closest('.box');
                         if (icon.classList.contains('fa-check')) {
                             icon.classList.remove('fa-check');
                             icon.classList.add('fa-times');
+                            box.classList.add('has-background-primary');
                         } else {
                             icon.classList.remove('fa-times');
                             icon.classList.add('fa-check');
+                            box.classList.remove('has-background-primary');
                         }
                     } else {
                         console.error('Failed to select exercise');
@@ -93,7 +98,7 @@
             <div class="columns is-multiline"></div>
                 {% for exercice in exercices if exercice.level == request.args.get('level', 'Seconde') and (not request.args.get('theme') or request.args.get('theme') == 'all' or exercice.theme == request.args.get('theme')) %}
                     <div class="column is-full">
-                        <div class="box">
+                        <div class="box {% if exercice.id in selected_exercises %}has-background-primary{% endif %}">
                             <div class="field is-grouped is-grouped-multiline">
                                 <div class="control">
                                     <div class="tags has-addons">
@@ -107,13 +112,15 @@
                                         <span class="tag is-success">{{ exercice.theme }}</span>
                                     </div>
                                 </div>
+                                {% if dev_mode %}
                                 <div class="field is-pulled-right">
-                                    <a class="button is-small is-warning" href="/edit_exercise?id={{ exercice.id }}"></a>
-                                        <span class="icon is-small"></span>
+                                    <a class="button is-small is-warning" href="/edit_exercise?id={{ exercice.id }}">
+                                        <span class="icon is-small">
                                             <i class="fas fa-edit"></i>
                                         </span>
                                     </a>
                                 </div>
+                                {% endif %}
                                 <div class="field is-pulled-right">
                                     <form id="selectExerciseForm-{{ exercice.id }}" action="/select_exercise" method="post" style="display:inline;">
                                         <input type="hidden" name="id" value="{{ exercice.id }}">
