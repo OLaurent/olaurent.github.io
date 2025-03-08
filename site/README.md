@@ -102,3 +102,4 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## Converting Latex to SVG
 
 Use the following command : dvisvgm --libgs=/opt/local/lib/libgs.dylib SVGFilename.dvi
+Add this in the SVG to be able to center it on the page : style="display: block; margin: 0 auto;"
