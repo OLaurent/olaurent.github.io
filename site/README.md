@@ -103,3 +103,8 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 Use the following command : dvisvgm --libgs=/opt/local/lib/libgs.dylib SVGFilename.dvi
 Add this in the SVG to be able to center it on the page : style="display: block; margin: 0 auto;"
+Color : stroke='#3e8ed0'
+Replace #000 with #3e8ed0
+Remove path with fill='#fff'
+Add fill:#3e8ed0; to text data
+
