@@ -16,6 +16,40 @@
             }
         };
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/python.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+        });
+    </script>
+
+    <style>
+        pre {
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 1em;
+            margin: 1em 0;
+            overflow: auto;
+        }
+        
+        pre code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Style pour le code Python dans les prévisualisations */
+        .content pre code.python {
+            display: block;
+            padding: 1em;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+        }
+    </style>
     {% block head %}{% endblock %}
 </head>
 <body>

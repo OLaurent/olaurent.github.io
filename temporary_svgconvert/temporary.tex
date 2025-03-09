@@ -2,9 +2,24 @@
 \usepackage{ProfLycee}
 \usepackage{tikz}
 \begin{document}
-  \begin{tikzpicture}
-    \tkzTabInit{$x$ / 1 , $f'(x)$ / 1, $f(x)$ / 1}{$0$, $3$, $+\infty$}
-    \tkzTabLine{, +, z, -,}
-    \tkzTabVar{+/$~$, -/$\dfrac{1}{3}$, +/$~$}
-  \end{tikzpicture}
+\begin{tikzpicture}[x=0.8cm,y=0.8cm,%unités
+	xmin=-1,xmax=6,xgrille=0.5,xgrilles=0.5, %axe Ox
+	ymin=-1,ymax=3,ygrille=0.5,ygrilles=0.5] %axe Oy
+		\GrilleTikz
+		\AxexTikz[Police=\small]{0,1}
+		\AxeyTikz[Police=\small]{1}
+		\AxesTikz
+
+		\draw[black, fill= black] (1,0) circle (2pt) ;
+		\draw[black, fill= black] (1,2) circle (2pt) ;
+		\draw[black, fill= black] (0,2) circle (2pt) ;
+		\draw (1,0) node[below right ] {$A$} ;
+		\draw (1,2) node[above right] {$B$} ;
+		\draw (0,2) node[above left] {$C$} ;
+    \draw[green, very thick] (-1,2)--(6,2) ;
+		\def\f{(2+2*ln(\x))/\x}
+		\draw[very thick,red,domain=0.32:6, samples=200] plot (\x,{\f}) ;
+		\draw[red] (5,1) node[above right] {$\mathcal{C}_f$} ;
+
+	\end{tikzpicture}
 \end{document}

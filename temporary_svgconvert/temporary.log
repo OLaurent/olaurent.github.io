@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=latex 2024.9.13)  9 MAR 2025 11:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=latex 2024.9.13)  9 MAR 2025 20:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1206,12 +1206,14 @@ Package: inputenc 2021/02/14 v1.3d Input encoding file
 \c__nicematrix_shift_Ldots_last_row_dim=\dimen377
 \c__nicematrix_shift_exterior_Vdots_dim=\dimen378
 \c__nicematrix_innersep_middle_dim=\dimen379
-LaTeX Font Info:    Trying to load font information for U+msa on input line 6.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 16.
+
 
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 6.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 16.
+
 
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -1225,12 +1227,12 @@ L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 47970 strings out of 474117
- 1084469 string characters out of 5743708
- 1944184 words of memory out of 5000000
- 69711 multiletter control sequences out of 15000+600000
- 559768 words of font info for 44 fonts, out of 8000000 for 9000
+ 48053 strings out of 474117
+ 1088502 string characters out of 5743708
+ 1936184 words of memory out of 5000000
+ 69793 multiletter control sequences out of 15000+600000
+ 560067 words of font info for 45 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 117i,8n,121p,2751b,913s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,6n,121p,2751b,826s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on temporary.dvi (1 page, 18496 bytes).
+Output written on temporary.dvi (1 page, 25476 bytes).
