@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 from flask_sqlalchemy import SQLAlchemy
 import os
 import json
-from docx import Document
 
 app = Flask(__name__)
 app.debug = True
@@ -99,15 +98,6 @@ def export_exercises():
                 export_file.write(f"{exercice['content']}\n\n")
                 export_file.write(f"\\subsection*{{Correction}}\n")
                 export_file.write(f"{exercice['correction']}\n\n")
-    elif export_format == 'docx':
-        export_file_path = '/tmp/selected_exercises.docx'
-        document = Document()
-        for exercice in exercices_data:
-            document.add_heading(f"{exercice['level']} - {exercice['theme']}", level=1)
-            document.add_paragraph(exercice['content'])
-            document.add_heading("Correction", level=2)
-            document.add_paragraph(exercice['correction'])
-        document.save(export_file_path)
     else:
         export_file_path = '/tmp/selected_exercises.json'
         with open(export_file_path, 'w') as export_file:
