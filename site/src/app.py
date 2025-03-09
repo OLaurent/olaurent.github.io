@@ -1,7 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
+"""
+This module defines the main routes for the Flask web application.
+Routes:
+    - /: Home page that displays all exercises and selected exercises.
+    - /edit_exercise: Route to edit an existing exercise. Supports GET and POST methods.
+    - /select_exercise: Route to select or deselect an exercise. Supports POST method.
+    - /export_menu: Route to display the export menu for selected exercises.
+    - /export_exercises: Route to export selected exercises in JSON or LaTeX format. Supports GET method.
+    - /create_exercise: Route to create a new exercise. Supports GET and POST methods.
+"""
 from flask_sqlalchemy import SQLAlchemy
 import os
 import json
+import uuid
 
 app = Flask(__name__)
 app.debug = True
@@ -104,6 +115,32 @@ def export_exercises():
             json.dump(exercices_data, export_file)
 
     return send_file(export_file_path, as_attachment=True, download_name=f'selected_exercises.{export_format}')
+
+
+
+@app.route('/create_exercise', methods=['GET', 'POST'])
+def create_exercise():
+    if request.method == 'POST':
+        # Création d'un nouvel exercice
+        new_exercice = Exercice(
+            id=str(uuid.uuid4()),
+            level=request.form.get('level'),
+            theme=request.form.get('theme'),
+            content=request.form.get('content'),
+            latex_code=request.form.get('latex_code', ''),
+            correction=request.form.get('correction', ''),
+            latex_correction=request.form.get('latex_correction', '')
+        )
+        db.session.add(new_exercice)
+        db.session.commit()
+        return redirect(url_for('home'))
+    else:
+        # Récupérer tous les thèmes existants
+        existing_themes = db.session.query(Exercice.theme).distinct().all()
+        unique_themes = sorted([theme[0] for theme in existing_themes])
+        
+        # Afficher le formulaire de création
+        return render_template('create_exercise.html', themes=unique_themes)
 
 if __name__ == '__main__':
     app.run(debug=True)

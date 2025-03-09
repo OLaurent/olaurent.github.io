@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Créer un exercice{% endblock %}
+
+{% block content %}
+<div class="column">
+    <div class="box">
+        <h1 class="title">Créer un nouvel exercice</h1>
+        
+        <div class="notification is-info">
+            <button class="delete"></button>
+            Utilisez les champs ci-dessous pour créer un nouvel exercice.
+        </div>
+        
+        <form method="post">
+            <div class="field">
+                <label class="label">Niveau</label>
+                <div class="control">
+                    <div class="select">
+                        <select name="level" required>
+                            <option value="Seconde">Seconde</option>
+                            <option value="Première">Première</option>
+                            <option value="Terminale">Terminale</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label">Thème</label>
+                <div class="control has-icons-left">
+                    <input class="input" type="text" name="theme" list="themes-list" required>
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-tag"></i>
+                    </span>
+                    <datalist id="themes-list">
+                        {% for theme in themes %}
+                            <option value="{{ theme }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <p class="help">Sélectionnez un thème existant ou saisissez un nouveau</p>
+            </div>
+            
+            <div class="tabs">
+                <ul>
+                    <li class="is-active"><a onclick="showTab('content-tab')">Contenu</a></li>
+                    <li><a onclick="showTab('correction-tab')">Correction</a></li>
+                </ul>
+            </div>
+
+            <div id="content-tab">
+                <div class="field">
+                    <label class="label">Contenu HTML</label>
+                    <div class="control">
+                        <textarea class="textarea" id="content-input" name="content" rows="10" required></textarea>
+                    </div>
+                    <p class="help">Utilisez la syntaxe MathJax entre $ pour les formules mathématiques</p>
+                </div>
+                
+                <div class="field">
+                    <label class="label">Prévisualisation</label>
+                    <div class="box content" id="content-preview">
+                        <!-- La prévisualisation sera affichée ici -->
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label">Code LaTeX (optionnel)</label>
+                    <div class="control">
+                        <textarea class="textarea" name="latex_code" rows="10"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="correction-tab" style="display: none;">
+                <div class="field">
+                    <label class="label">Correction HTML</label>
+                    <div class="control">
+                        <textarea class="textarea" id="correction-input" name="correction" rows="10"></textarea>
+                    </div>
+                    <p class="help">Utilisez la syntaxe MathJax entre $ pour les formules mathématiques</p>
+                </div>
+                
+                <div class="field">
+                    <label class="label">Prévisualisation</label>
+                    <div class="box content" id="correction-preview">
+                        <!-- La prévisualisation sera affichée ici -->
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label">Correction LaTeX (optionnel)</label>
+                    <div class="control">
+                        <textarea class="textarea" name="latex_correction" rows="10"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field is-grouped">
+                <div class="control">
+                    <button type="submit" class="button is-primary">
+                        <span class="icon">
+                            <i class="fas fa-save"></i>
+                        </span>
+                        <span>Créer l'exercice</span>
+                    </button>
+                </div>
+                <div class="control">
+                    <a href="/" class="button is-light">
+                        <span class="icon">
+                            <i class="fas fa-times"></i>
+                        </span>
+                        <span>Annuler</span>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fonction pour gérer les onglets
+    function showTab(tabId) {
+        // Masquer tous les onglets
+        document.querySelectorAll('div[id$="-tab"]').forEach(tab => {
+            tab.style.display = 'none';
+        });
+        
+        // Afficher l'onglet sélectionné
+        document.getElementById(tabId).style.display = 'block';
+        
+        // Mettre à jour la classe active
+        document.querySelectorAll('.tabs li').forEach(li => {
+            li.classList.remove('is-active');
+        });
+        
+        // Trouver le li correspondant et le rendre actif
+        document.querySelector(`.tabs li a[onclick="showTab('${tabId}')"]`).parentElement.classList.add('is-active');
+        
+        // Forcer la mise à jour des prévisualisations lorsqu'on change d'onglet
+        if (tabId === 'content-tab') {
+            updatePreviewContent();
+        } else if (tabId === 'correction-tab') {
+            updatePreviewCorrection();
+        }
+    }
+
+    // Déclarer les fonctions de mise à jour en dehors pour pouvoir y accéder depuis showTab
+    let updatePreviewContent;
+    let updatePreviewCorrection;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Pour fermer les notifications
+        (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+            const $notification = $delete.parentNode;
+            $delete.addEventListener('click', () => {
+                $notification.parentNode.removeChild($notification);
+            });
+        });
+
+        // Fonction pour créer une prévisualisation en direct
+        function setupLivePreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            
+            if (input && preview) {
+                // Fonction pour mettre à jour la prévisualisation
+                function updatePreview() {
+                    console.log(`Updating preview for ${inputId}`);
+                    preview.innerHTML = input.value;
+                    // Retraiter les formules mathématiques
+                    if (window.MathJax) {
+                        try {
+                            MathJax.typeset([preview]);
+                        } catch (e) {
+                            console.error('MathJax error:', e);
+                        }
+                    }
+                }
+                
+                // Événements pour mettre à jour la prévisualisation
+                input.addEventListener('input', updatePreview);
+                input.addEventListener('change', updatePreview);
+                
+                return updatePreview;
+            }
+            return () => {};
+        }
+        
+        // Configurer les prévisualisations pour le contenu et la correction
+        updatePreviewContent = setupLivePreview('content-input', 'content-preview');
+        updatePreviewCorrection = setupLivePreview('correction-input', 'correction-preview');
+        
+        // Mise à jour initiale
+        updatePreviewContent();
+    });
+</script>
+{% endblock %}
