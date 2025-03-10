@@ -1,22 +1,27 @@
-\documentclass{standalone}
+\documentclass{article}
 \usepackage{ProfLycee}
 \usepackage{tikz}
 \begin{document}
 
-
-
 \begin{enumerate}
-\item On détermine une primitive de $f$, en écrivant $f(x)$ sous la forme $f(x)=k\times u'(x)u(x)$, avec $u(x)=\e^{x^2-3}$ et $u'(x)=2x$.
+    \item Elle modélise le nombre de véhicules présents au péage en fonction de l'heure de la matinée $t$, par la fonction définie sur $[0 ; 12]$ par :
+    $$f(t) = -0,3t^3 + 5,4t^2 - 18t + 19$$
+    \begin{enumerate}
+      \item Calculer la fonction dérivée $f'(t)$ puis dresser le tableau de variation de la fonction $f$ sur $[0 ; 12]$.
+      \item En déduire l'heure de l'affluence maximale de la matinée. Quel est alors le nombre de véhicules présents au péage à cet instant?
+    \end{enumerate}
+  
+    \item Pour l'affluence de fin de journée, le modèle choisi est la fonction $g$ définie sur $[14 ; 23]$ par :
+    $$g(t) = -2t^2 + 74t - 630$$
+    \begin{enumerate}
+      \item Calculer la fonction dérivée $g'(t)$ puis dresser le tableau de variation de la fonction $g$ sur $[14 ; 23]$.
+      \item Le responsable du péage sait que lorsque l'affluence dépasse 50 véhicules, il lui est nécessaire, pour fluidifier le trafic, d'ouvrir toutes les voies de paiement.
+      
+      Déterminer la tranche horaire durant laquelle toutes les voies doivent être ouvertes.
+    \end{enumerate}
+  \end{enumerate}
 
-On a $f(x)=\dfrac{3}{2} \times 2x\e^{x^2-3}$, donc $F(x)=\dfrac{3}{2}\e^{x^2-3}$.
 
-
-\item On détermine une primitive de $g$, en écrivant $g(x)$
-sous la forme $g(x)=k\times \left(- \dfrac{v'(x}{(v(x))^2}) \right)$,
-avec $v(x)=1-\e^{x}$ et $v'(x)=-\e^{x}$.
-
-On a $g(x)=-\dfrac{-\e^{x}}{(1-\e^{x})^2}$, donc $G(x)=\dfrac{1}{1-\e^{x}}$.
-
-\end{enumerate}
+  
 
 \end{document}
