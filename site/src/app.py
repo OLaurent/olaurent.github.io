@@ -22,6 +22,7 @@ app.secret_key = 'your_secret_key'  # Nécessaire pour utiliser flash messages
 db = SQLAlchemy(app)
 
 from models import Exercice
+from docx_exporter import DocxExporter
 
 @app.route('/')
 def home():
@@ -109,6 +110,10 @@ def export_exercises():
                 export_file.write(f"{exercice['content']}\n\n")
                 export_file.write(f"\\subsection*{{Correction}}\n")
                 export_file.write(f"{exercice['correction']}\n\n")
+    elif export_format == 'docx':
+        export_file_path = '/tmp/selected_exercises.docx'
+        exporter = DocxExporter(exercices_data)
+        exporter.export(export_file_path)
     else:
         export_file_path = '/tmp/selected_exercises.json'
         with open(export_file_path, 'w') as export_file:
