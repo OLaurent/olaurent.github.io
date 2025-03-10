@@ -16,6 +16,20 @@
             }
         };
     </script>
+    <style>
+        .preview-box {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 150px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        .preview-title {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <section class="hero is-primary is-bold">
@@ -52,8 +66,16 @@
 
                 <div class="field">
                     <label class="label">Contenu</label>
-                    <div class="control">
-                        <textarea class="textarea" name="content">{{ exercice.content }}</textarea>
+                    <div class="columns">
+                        <div class="column">
+                            <div class="control">
+                                <textarea class="textarea" name="content" id="content-textarea" rows="10">{{ exercice.content }}</textarea>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <p class="preview-title">Prévisualisation:</p>
+                            <div id="content-preview" class="preview-box"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -66,8 +88,16 @@
 
                 <div class="field">
                     <label class="label">Correction</label>
-                    <div class="control">
-                        <textarea class="textarea" name="correction">{{ exercice.correction }}</textarea>
+                    <div class="columns">
+                        <div class="column">
+                            <div class="control">
+                                <textarea class="textarea" name="correction" id="correction-textarea" rows="10">{{ exercice.correction }}</textarea>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <p class="preview-title">Prévisualisation:</p>
+                            <div id="correction-preview" class="preview-box"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -89,5 +119,63 @@
             </form>
         </div>
     </section>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fonction pour mettre à jour la prévisualisation
+            function updatePreview(inputId, previewId) {
+                const textarea = document.getElementById(inputId);
+                const preview = document.getElementById(previewId);
+                
+                if (!textarea || !preview) {
+                    console.error(`Éléments non trouvés: ${inputId} ou ${previewId}`);
+                    return;
+                }
+                
+                // Affichage de débogage
+                console.log(`Initialisation de ${inputId} avec valeur:`, textarea.value);
+                
+                // Met à jour la prévisualisation lors de la saisie
+                textarea.addEventListener('input', function() {
+                    console.log(`Mise à jour de ${previewId} avec:`, this.value);
+                    preview.innerHTML = this.value;
+                    
+                    // Re-render MathJax content
+                    if (window.MathJax) {
+                        MathJax.typesetPromise([preview]).catch(function(err) {
+                            console.log('MathJax error:', err);
+                        });
+                    } else {
+                        console.warn('MathJax n\'est pas disponible');
+                    }
+                });
+                
+                // Initialiser la prévisualisation au chargement avec un léger délai
+                // pour s'assurer que MathJax est chargé
+                setTimeout(function() {
+                    preview.innerHTML = textarea.value;
+                    if (window.MathJax) {
+                        MathJax.typesetPromise([preview]).catch(function(err) {
+                            console.log('MathJax error:', err);
+                        });
+                    }
+                }, 500);
+            }
+            
+            // S'assurer que MathJax est chargé
+            if (typeof MathJax === 'undefined') {
+                console.warn('MathJax n\'est pas encore disponible, chargement en cours...');
+            }
+            
+            // Initialiser les prévisualisations avec un délai pour être sûr que DOM est prêt
+            setTimeout(function() {
+                console.log('Initialisation des prévisualisations...');
+                updatePreview('content-textarea', 'content-preview');
+                updatePreview('correction-textarea', 'correction-preview');
+            }, 300);
+        });
+    </script>
+
 </body>
 </html>
