@@ -120,6 +120,32 @@
                                         </span>
                                     </a>
                                 </div>
+                                <div class="field is-pulled-right">
+                                    <button class="button is-small is-danger" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.add('is-active')">
+                                        <span class="icon is-small">
+                                            <i class="fas fa-trash"></i>
+                                        </span>
+                                    </button>
+                                    <div id="deleteModal-{{ exercice.id }}" class="modal">
+                                        <div class="modal-background"></div>
+                                        <div class="modal-card">
+                                            <header class="modal-card-head">
+                                                <p class="modal-card-title">Confirmation de suppression</p>
+                                                <button class="delete" aria-label="close" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.remove('is-active')"></button>
+                                            </header>
+                                            <section class="modal-card-body">
+                                                <p>Êtes-vous sûr de vouloir supprimer cet exercice ?</p>
+                                            </section>
+                                            <footer class="modal-card-foot">
+                                                <form id="deleteExerciseForm-{{ exercice.id }}" action="/delete_exercise" method="post" style="display:inline;">
+                                                    <input type="hidden" name="id" value="{{ exercice.id }}">
+                                                    <button class="button is-danger" type="submit">Supprimer</button>
+                                                </form>
+                                                <button class="button" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.remove('is-active')">Annuler</button>
+                                            </footer>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% endif %}
                                 <div class="field is-pulled-right">
                                     <form id="selectExerciseForm-{{ exercice.id }}" action="/select_exercise" method="post" style="display:inline;">

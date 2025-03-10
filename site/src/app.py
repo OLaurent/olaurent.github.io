@@ -117,6 +117,18 @@ def export_exercises():
     return send_file(export_file_path, as_attachment=True, download_name=f'selected_exercises.{export_format}')
 
 
+@app.route('/delete_exercise', methods=['POST'])
+def delete_exercise():
+    exercice_id = request.form.get('id')
+    exercice = Exercice.query.get(exercice_id)
+    if exercice:
+        db.session.delete(exercice)
+        db.session.commit()
+        print(f'Exercice {exercice_id} supprimé.')
+    else:
+        print(f'Exercice {exercice_id} non trouvé.')
+    return redirect(url_for('home'))
+
 
 @app.route('/create_exercise', methods=['GET', 'POST'])
 def create_exercise():
