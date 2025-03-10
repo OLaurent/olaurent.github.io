@@ -2,24 +2,21 @@
 \usepackage{ProfLycee}
 \usepackage{tikz}
 \begin{document}
-\begin{tikzpicture}[x=0.8cm,y=0.8cm,%unités
-	xmin=-1,xmax=6,xgrille=0.5,xgrilles=0.5, %axe Ox
-	ymin=-1,ymax=3,ygrille=0.5,ygrilles=0.5] %axe Oy
-		\GrilleTikz
-		\AxexTikz[Police=\small]{0,1}
-		\AxeyTikz[Police=\small]{1}
-		\AxesTikz
 
-		\draw[black, fill= black] (1,0) circle (2pt) ;
-		\draw[black, fill= black] (1,2) circle (2pt) ;
-		\draw[black, fill= black] (0,2) circle (2pt) ;
-		\draw (1,0) node[below right ] {$A$} ;
-		\draw (1,2) node[above right] {$B$} ;
-		\draw (0,2) node[above left] {$C$} ;
-    \draw[green, very thick] (-1,2)--(6,2) ;
-		\def\f{(2+2*ln(\x))/\x}
-		\draw[very thick,red,domain=0.32:6, samples=200] plot (\x,{\f}) ;
-		\draw[red] (5,1) node[above right] {$\mathcal{C}_f$} ;
 
-	\end{tikzpicture}
+
+\begin{enumerate}
+\item On détermine une primitive de $f$, en écrivant $f(x)$ sous la forme $f(x)=k\times u'(x)u(x)$, avec $u(x)=\e^{x^2-3}$ et $u'(x)=2x$.
+
+On a $f(x)=\dfrac{3}{2} \times 2x\e^{x^2-3}$, donc $F(x)=\dfrac{3}{2}\e^{x^2-3}$.
+
+
+\item On détermine une primitive de $g$, en écrivant $g(x)$
+sous la forme $g(x)=k\times \left(- \dfrac{v'(x}{(v(x))^2}) \right)$,
+avec $v(x)=1-\e^{x}$ et $v'(x)=-\e^{x}$.
+
+On a $g(x)=-\dfrac{-\e^{x}}{(1-\e^{x})^2}$, donc $G(x)=\dfrac{1}{1-\e^{x}}$.
+
+\end{enumerate}
+
 \end{document}
