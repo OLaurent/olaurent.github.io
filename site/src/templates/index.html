@@ -106,11 +106,10 @@
                                         <span class="tag is-success">{{ exercice.level }}</span>
                                     </div>
                                 </div>
-                                <div class="control">
-                                    <div class="tags has-addons">
-                                        <span class="tag is-dark">Thème</span>
-                                        <span class="tag is-success">{{ exercice.theme }}</span>
-                                    </div>
+                                <div class="tags">
+                                    {% for tag in exercice.tags %}
+                                    <span class="tag is-success" style="margin-right: 5px;">{{ tag.name }}</span>
+                                    {% endfor %}
                                 </div>
                                 {% if dev_mode %}
                                 <div class="field is-pulled-right">

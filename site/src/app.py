@@ -10,6 +10,7 @@ Routes:
     - /create_exercise: Route to create a new exercise. Supports GET and POST methods.
 """
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import os
 import json
 import uuid
@@ -20,8 +21,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///exe
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'your_secret_key'  # Nécessaire pour utiliser flash messages
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
-from models import Exercice
+from models import Exercice, Tag
 from docx_exporter import DocxExporter
 
 @app.route('/')
@@ -33,28 +35,38 @@ def home():
 
 @app.route('/edit_exercise', methods=['GET', 'POST'])
 def edit_exercise():
+    all_tags = Tag.query.order_by(Tag.name).all()
+    
     if request.method == 'POST':
-        # Traitement du formulaire
+        # Pour les requêtes POST, obtenir l'ID du formulaire
         exercice_id = request.form.get('id')
-        exercice = Exercice.query.get(exercice_id)
-        if exercice is None:
-            print('Exercice non trouvé.')
-            return redirect(url_for('home'))
-
+        exercice = Exercice.query.get_or_404(exercice_id)
+        
+        # Récupérer les données du formulaire
         exercice.level = request.form.get('level')
         exercice.theme = request.form.get('theme')
         exercice.content = request.form.get('content')
         exercice.latex_code = request.form.get('latex_code')
         exercice.correction = request.form.get('correction')
         exercice.latex_correction = request.form.get('latex_correction')
+        # Traiter les tags
+        tag_names = request.form.getlist('tags')
+        exercice.tags = []
+        for tag_name in tag_names:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if tag is None:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+            exercice.tags.append(tag)
+        
         db.session.commit()
         return redirect(url_for('home'))
     else:
+        # Pour les requêtes GET, obtenir l'ID des paramètres de requête
         exercice_id = request.args.get('id')
-        exercice = Exercice.query.get(exercice_id)
-        if exercice is None:
-            return redirect(url_for('home'))
-        return render_template('edit_exercise.html', exercice=exercice)
+        exercice = Exercice.query.get_or_404(exercice_id)
+    
+    return render_template('edit_exercise.html', exercice=exercice, all_tags=all_tags)
 
 
 @app.route('/select_exercise', methods=['POST'])
