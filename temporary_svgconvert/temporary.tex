@@ -1,27 +1,51 @@
 \documentclass{article}
 \usepackage{ProfLycee}
+\useproflyclib{ecritures}
 \usepackage{tikz}
 \begin{document}
 
+Un industriel doit fabriquer une boîte fermée de volume $1\,\text{L}$, soit $1\,\text{dm}^3$, ayant la forme d'un pavé de hauteur $h$ dont la base est un carré de côté $x$. L'unité de longueur est le $\text{dm}$.
+
 \begin{enumerate}
-    \item Elle modélise le nombre de véhicules présents au péage en fonction de l'heure de la matinée $t$, par la fonction définie sur $[0 ; 12]$ par :
-    $$f(t) = -0,3t^3 + 5,4t^2 - 18t + 19$$
-    \begin{enumerate}
-      \item Calculer la fonction dérivée $f'(t)$ puis dresser le tableau de variation de la fonction $f$ sur $[0 ; 12]$.
-      \item En déduire l'heure de l'affluence maximale de la matinée. Quel est alors le nombre de véhicules présents au péage à cet instant?
-    \end{enumerate}
+  \item Justifier que $h = \dfrac{1}{x^2}$.
   
-    \item Pour l'affluence de fin de journée, le modèle choisi est la fonction $g$ définie sur $[14 ; 23]$ par :
-    $$g(t) = -2t^2 + 74t - 630$$
-    \begin{enumerate}
-      \item Calculer la fonction dérivée $g'(t)$ puis dresser le tableau de variation de la fonction $g$ sur $[14 ; 23]$.
-      \item Le responsable du péage sait que lorsque l'affluence dépasse 50 véhicules, il lui est nécessaire, pour fluidifier le trafic, d'ouvrir toutes les voies de paiement.
-      
-      Déterminer la tranche horaire durant laquelle toutes les voies doivent être ouvertes.
-    \end{enumerate}
-  \end{enumerate}
+  \item En déduire que l'aire totale des faces du pavé est $S = 2x^2 + \dfrac{4}{x}$.
+  
+  \item Montrer que pour $x > 0$, on a $S'(x) = \dfrac{4(x-1)(x^2+x+1)}{x^2}$.
+  
+  \item En déduire les variations de $S$.
+  
+  \item Donner les dimensions de la boîte d'aire minimale.
+\end{enumerate}
 
 
-  
+\begin{enumerate}
+  \item Le volume de la boîte est $1\,\text{dm}^3$ donc $\mathcal{V}=x \times x \times h = 1$ d'où $h = \dfrac{1}{x^2}$.
+    
+    \item L'aire totale des faces du pavé est $$S(x) = \mathcal{A}_{\text{base}}\times 2+\mathcal{A}_{\text{latérale}}\times 4 = 2x^2 + 4xh = 2x^2 + 4x\times \dfrac{1}{x^2} = 2x^2 + \dfrac{4}{x}$$
+    
+    \item $S$ est dérivable sur $\IntervalleOO{0}{+\infty}$ et $S'(x) = 4x - \dfrac{4}{x^2} = \dfrac{4x^3-4}{x^2}$.
+    
+    De plus: $4(x-1)(x^2+x+1) = 4(x^3+x^2+x-x^2-x-1) = 4(x^3-1) = 4x^2-4$.
+
+    On en déduit que pour tout $x \in \IntervalleOO{0}{+\infty}$ $$S'(x) = \dfrac{4(x-1)(x^2+x+1)}{x^2}$$
+
+    \item On étudie le signe de $x^2+x+1$. $\Delta = 1-4 = -3 < 0$ donc $x^2+x+1 > 0$ pour tout $x \in \R$.
+    
+    $S'(x)$ est donc du signe de $x-1$.
+
+    On a donc le tableau de variations suivant:
+
+    \begin{center}
+    \begin{tikzpicture}
+    \tkzTabInit{$x$ / 1 , $S'(x)$ / 1, $S(x)$ / 1.5}{$0$, $1$, $+\infty$}
+    \tkzTabLine{, -, z, +,}
+    \tkzTabVar{+/ $~$, -/ $6$, +/ $~$}
+    \end{tikzpicture}
+    \end{center}
+
+    \item La boîte d'aire minimale est celle pour laquelle $S$ est minimale, c'est-à-dire pour $x=1$. C'est un cube de côté $1$.
+\end{enumerate}
+
 
 \end{document}
