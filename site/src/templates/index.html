@@ -18,169 +18,629 @@
             }
         };
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('form[id^="selectExerciseForm-"]').forEach(form => {
-                form.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const formData = new FormData(form);
-                    const response = await fetch(form.action, {
-                        method: form.method,
-                        body: formData
-                    });
-                    if (response.ok) {
-                        // Optionally, update the UI to reflect the change
-                        const icon = form.querySelector('i');
-                        const box = form.closest('.box');
-                        if (icon.classList.contains('fa-check')) {
-                            icon.classList.remove('fa-check');
-                            icon.classList.add('fa-times');
-                            box.classList.add('has-background-primary');
-                        } else {
-                            icon.classList.remove('fa-times');
-                            icon.classList.add('fa-check');
-                            box.classList.remove('has-background-primary');
-                        }
-                    } else {
-                        console.error('Failed to select exercise');
-                    }
-                });
-            });
-        });
-    </script>
+    <style>
+        .filter-panel {
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(10,10,10,0.1);
+            padding: 1.25rem;
+            height: 100%;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .filter-section {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 1rem;
+        }
+        
+        .filter-section:last-child {
+            border-bottom: none;
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: #363636;
+        }
+        
+        .filter-content {
+            max-height: 200px;
+            overflow-y: auto;
+            transition: max-height 0.3s ease;
+        }
+        
+        .filter-content.is-collapsed {
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        
+        .search-input {
+            margin-bottom: 1.5rem;
+        }
+        
+        .tag-count {
+            background-color: #f0f0f0;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            margin-left: 0.5rem;
+            color: #666;
+        }
+        
+        .exercise-item {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .exercise-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10,10,10,0.1);
+        }
+        
+        .filter-reset {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Styles pour la pagination */
+        .pagination-link.is-current {
+            transition: all 0.3s ease;
+            transform: scale(1.1);
+        }
+
+        .pagination-previous.is-disabled,
+        .pagination-next.is-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Animation pour la transition entre pages */
+        .exercise-item {
+            transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Style pour l'indicateur de page */
+        #page-indicator {
+            font-size: 0.85rem;
+            box-shadow: 0 2px 3px rgba(10,10,10,0.1);
+        }
+        
+    </style>
 {% endblock %}
 
 {% block content %}
-    <div class="column">
-        <div class="box">
-            <div class="tabs is-centered is-boxed">
-                <ul>
-                    <li class="{{ 'is-active' if request.args.get('level') == 'Seconde' or not request.args.get('level') }}">
-                        <a href="?level=Seconde">
-                            <span class="icon is-small"><i class="fas fa-graduation-cap"></i></span>
-                            <span>Seconde</span>
-                        </a>
-                    </li>
-                    <li class="{{ 'is-active' if request.args.get('level') == 'Première' }}">
-                        <a href="?level=Première">
-                            <span class="icon is-small"><i class="fas fa-book"></i></span>
-                            <span>Première</span>
-                        </a>
-                    </li>
-                    <li class="{{ 'is-active' if request.args.get('level') == 'Terminale' }}">
-                        <a href="?level=Terminale">
-                            <span class="icon is-small"><i class="fas fa-award"></i></span>
-                            <span>Terminale</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="field">
-                <div class="control has-text-centered">
-                    <div class="select">
-                        <select id="themeFilter" onchange="window.location.href='?level={{ request.args.get('level') }}&theme='+this.value">
-                            <option value="all" {{ 'selected' if not request.args.get('theme') or request.args.get('theme') == 'all' }}>Tous les thèmes</option>
-                            {% set unique_themes = [] %}
-                            {% for exercise in exercices %}
-                                {% if exercise.theme not in unique_themes %}
-                                    {% set _ = unique_themes.append(exercise.theme) %}
-                                {% endif %}
-                            {% endfor %}
-                            {% for theme in unique_themes | sort %}
-                                <option value="{{ theme }}" {{ 'selected' if request.args.get('theme') == theme }}>{{ theme }}</option>
-                            {% endfor %}
-                        </select>
+<div class="container">
+    <div class="columns">
+        <!-- Colonne de filtres à gauche -->
+        <div class="column is-one-quarter">
+            <div class="filter-panel">
+                <h3 class="title is-5">Filtres</h3>
+                
+                <!-- Recherche textuelle -->
+                <div class="field search-input">
+                    <label class="label is-small">Recherche</label>
+                    <div class="control has-icons-left">
+                        <input id="search-filter" class="input" type="text" placeholder="Rechercher...">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div> <!-- Fermeture de la div "control has-icons-left" -->
+                </div><!-- Fermeture de la div "field search-input" -->
+                
+                <!-- Filtre par niveau -->
+                <div class="filter-section">
+                    <div class="filter-header" onclick="toggleFilterSection(this)">
+                        <span>Niveau</span>
+                        <span class="icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="filter-content">
+                        <label class="checkbox-container">
+                            <input type="checkbox" class="level-filter" value="Seconde" checked="{{ request.args.get('level') == 'Seconde' or not request.args.get('level') }}">
+                            Seconde
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" class="level-filter" value="Première" checked="{{ request.args.get('level') == 'Première' }}">
+                            Première
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" class="level-filter" value="Terminale" checked="{{ request.args.get('level') == 'Terminale' }}">
+                            Terminale
+                        </label>
+                    </div>
+                </div><!-- Fermeture de la div "filter-section" -->
+                
+                <!-- Filtre par thème -->
+                <div class="filter-section">
+                    <div class="filter-header" onclick="toggleFilterSection(this)">
+                        <span>Thème</span>
+                        <span class="icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="filter-content">
+                        {% set unique_themes = [] %}
+                        {% for exercice in exercices %}
+                            {% if exercice.theme not in unique_themes %}
+                                {% set _ = unique_themes.append(exercice.theme) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <label class="checkbox-container">
+                            <input type="checkbox" class="theme-filter" value="all" checked="{{ not request.args.get('theme') or request.args.get('theme') == 'all' }}">
+                            Tous les thèmes
+                        </label>
+                        
+                        {% for theme in unique_themes | sort %}
+                        <label class="checkbox-container">
+                            <input type="checkbox" class="theme-filter" value="{{ theme }}" {{ 'checked' if request.args.get('theme') == theme }}>
+                            {{ theme }}
+                        </label>
+                        {% endfor %}
                     </div>
                 </div>
-            </div>
-
-            <div class="columns is-multiline"></div>
-                {% for exercice in exercices if exercice.level == request.args.get('level', 'Seconde') and (not request.args.get('theme') or request.args.get('theme') == 'all' or exercice.theme == request.args.get('theme')) %}
-                    <div class="column is-full">
-                        <div class="box {% if exercice.id in selected_exercises %}has-background-primary{% endif %}">
-                            <div class="field is-grouped is-grouped-multiline">
-                                <div class="control">
-                                    <div class="tags has-addons">
-                                        <span class="tag is-dark">Niveau</span>
-                                        <span class="tag is-success">{{ exercice.level }}</span>
-                                    </div>
-                                </div>
-                                <div class="tags">
-                                    {% for tag in exercice.tags %}
-                                    <span class="tag is-success" style="margin-right: 5px;">{{ tag.name }}</span>
-                                    {% endfor %}
-                                </div>
-                                {% if dev_mode %}
-                                <div class="field is-pulled-right">
-                                    <a class="button is-small is-warning" href="/edit_exercise?id={{ exercice.id }}">
-                                        <span class="icon is-small">
-                                            <i class="fas fa-edit"></i>
-                                        </span>
-                                    </a>
-                                </div>
-                                <div class="field is-pulled-right">
-                                    <button class="button is-small is-danger" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.add('is-active')">
-                                        <span class="icon is-small">
-                                            <i class="fas fa-trash"></i>
-                                        </span>
-                                    </button>
-                                    <div id="deleteModal-{{ exercice.id }}" class="modal">
-                                        <div class="modal-background"></div>
-                                        <div class="modal-card">
-                                            <header class="modal-card-head">
-                                                <p class="modal-card-title">Confirmation de suppression</p>
-                                                <button class="delete" aria-label="close" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.remove('is-active')"></button>
-                                            </header>
-                                            <section class="modal-card-body">
-                                                <p>Êtes-vous sûr de vouloir supprimer cet exercice ?</p>
-                                            </section>
-                                            <footer class="modal-card-foot">
-                                                <form id="deleteExerciseForm-{{ exercice.id }}" action="/delete_exercise" method="post" style="display:inline;">
-                                                    <input type="hidden" name="id" value="{{ exercice.id }}">
-                                                    <button class="button is-danger" type="submit">Supprimer</button>
-                                                </form>
-                                                <button class="button" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.remove('is-active')">Annuler</button>
-                                            </footer>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endif %}
-                                <div class="field is-pulled-right">
-                                    <form id="selectExerciseForm-{{ exercice.id }}" action="/select_exercise" method="post" style="display:inline;">
-                                        <input type="hidden" name="id" value="{{ exercice.id }}">
-                                        <div class="tags has-addons">
-                                            <button class="button is-small is-link is-inverted" type="submit">
-                                                <span class="icon is-small">
-                                                    <i class="fas {{ 'fa-times' if exercice.id in selected_exercises else 'fa-check' }}"></i>
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <div class="content">{{ exercice.content | safe }}</div>
-                            <div class="field">
-                                <button class="button is-info" onclick="document.getElementById('correction-{{ loop.index }}').classList.toggle('is-hidden')">
-                                    <span class="icon is-small">
-                                        <i class="fas fa-eye"></i>
-                                    </span>
-                                    <span>Afficher/Masquer Correction</span>
-                                </button>
-                            </div>
-                            <article class="message is-info is-hidden" id="correction-{{ loop.index }}">
-                                <div class="message-header">
-                                    <p>Correction</p>
-                                    <button class="delete" aria-label="delete" onclick="document.getElementById('correction-{{ loop.index }}').classList.toggle('is-hidden')"></button>
-                                </div>
-                                <div class="message-body">
-                                    {{ exercice.correction | safe }}
-                                </div>
-                            </article>
-                        </div>
+                
+                <!-- Filtre par tag -->
+                <div class="filter-section">
+                    <div class="filter-header" onclick="toggleFilterSection(this)">
+                        <span>Tags</span>
+                        <span class="icon"><i class="fas fa-chevron-down"></i></span>
                     </div>
-                {% endfor %}
+                    <div class="filter-content">
+                        <!-- Ajouter cette option pour les exercices sans tags -->
+                        <label class="checkbox-container">
+                            <input type="checkbox" class="tag-filter" value="no_tags">
+                            Sans tag
+                        </label>
+                        
+                        {% set unique_tags = [] %}
+                        {% for exercice in exercices %}
+                            {% for tag in exercice.tags %}
+                                {% if tag.name not in unique_tags %}
+                                    {% set _ = unique_tags.append(tag.name) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        
+                        {% for tag in unique_tags | sort %}
+                        <label class="checkbox-container">
+                            <input type="checkbox" class="tag-filter" value="{{ tag }}">
+                            {{ tag }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <button id="reset-filters" class="button is-light is-small filter-reset">
+                    <span class="icon is-small">
+                        <i class="fas fa-undo"></i>
+                    </span>
+                    <span>Réinitialiser les filtres</span>
+                </button>
             </div>
         </div>
-    </div>
+        
+        <!-- Colonne d'exercices à droite -->
+        <div class="column">
+            <!-- Ajouter cet élément pour le message "aucun résultat" -->
+            <div id="no-results" class="box is-hidden">
+                <p class="has-text-centered">Aucun exercice ne correspond aux critères sélectionnés.</p>
+            </div>
+     
+
+            <div class="box">
+                <div class="columns is-multiline">
+                    {% for exercice in exercices %}
+                        <div class="column is-full exercise-item" 
+                            data-level="{{ exercice.level|default('') }}" 
+                            data-theme="{{ exercice.theme|default('') }}" 
+                            data-tags="{% for tag in exercice.tags %}{{ tag.name|default(tag) }}{% if not loop.last %},{% endif %}{% endfor %}">
+                            <div class="box {% if exercice.id in selected_exercises %}has-background-primary{% endif %}">
+                                <div class="field is-grouped is-grouped-multiline">
+                                    <div class="control">
+                                        <div class="tags has-addons">
+                                            <span class="tag is-dark">Niveau</span>
+                                            <span class="tag is-success">{{ exercice.level }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="control">
+                                        <div class="tags has-addons">
+                                            <span class="tag is-dark">Thème</span>
+                                            <span class="tag is-info">{{ exercice.theme }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="tags">
+                                        {% for tag in exercice.tags %}
+                                        <span class="tag is-success" style="margin-right: 5px;">{{ tag.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% if dev_mode %}
+                                    <div class="field is-pulled-right">
+                                        <a class="button is-small is-warning" href="/edit_exercise?id={{ exercice.id }}">
+                                            <span class="icon is-small">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                        </a>
+                                    </div>
+                                    <div class="field is-pulled-right">
+                                        <button class="button is-small is-danger" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.add('is-active')">
+                                            <span class="icon is-small">
+                                                <i class="fas fa-trash"></i>
+                                            </span>
+                                        </button>
+                                        <div id="deleteModal-{{ exercice.id }}" class="modal">
+                                            <div class="modal-background"></div>
+                                            <div class="modal-card">
+                                                <header class="modal-card-head">
+                                                    <p class="modal-card-title">Confirmation de suppression</p>
+                                                    <button class="delete" aria-label="close" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.remove('is-active')"></button>
+                                                </header>
+                                                <section class="modal-card-body">
+                                                    <p>Êtes-vous sûr de vouloir supprimer cet exercice ?</p>
+                                                </section>
+                                                <footer class="modal-card-foot">
+                                                    <form id="deleteExerciseForm-{{ exercice.id }}" action="/delete_exercise" method="post" style="display:inline;">
+                                                        <input type="hidden" name="id" value="{{ exercice.id }}">
+                                                        <button class="button is-danger" type="submit">Supprimer</button>
+                                                    </form>
+                                                    <button class="button" onclick="document.getElementById('deleteModal-{{ exercice.id }}').classList.remove('is-active')">Annuler</button>
+                                                </footer>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="field is-pulled-right">
+                                        <form id="selectExerciseForm-{{ exercice.id }}" action="/select_exercise" method="post" style="display:inline;">
+                                            <input type="hidden" name="id" value="{{ exercice.id }}">
+                                            <div class="tags has-addons">
+                                                <button class="button is-small is-link is-inverted" type="submit">
+                                                    <span class="icon is-small">
+                                                        <i class="fas {{ 'fa-times' if exercice.id in selected_exercises else 'fa-check' }}"></i>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="content">{{ exercice.content | safe }}</div>
+                                <div class="field">
+                                    <button class="button is-info" onclick="document.getElementById('correction-{{ loop.index }}').classList.toggle('is-hidden')">
+                                        <span class="icon is-small">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                        <span>Afficher/Masquer Correction</span>
+                                    </button>
+                                </div>
+                                <article class="message is-info is-hidden" id="correction-{{ loop.index }}">
+                                    <div class="message-header">
+                                        <p>Correction</p>
+                                        <button class="delete" aria-label="delete" onclick="document.getElementById('correction-{{ loop.index }}').classList.toggle('is-hidden')"></button>
+                                    </div>
+                                    <div class="message-body">
+                                        {{ exercice.correction | safe }}
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div> <!-- Fermeture de la div "columns is-multiline" -->
+    
+                <!-- Pagination moderne avec Bulma -->
+                <nav class="pagination is-rounded is-centered mt-5" role="navigation" aria-label="pagination" id="pagination-container">
+                    <a class="pagination-previous" id="prev-page">
+                        <span class="icon">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                        <span>Précédent</span>
+                    </a>
+                    <a class="pagination-next" id="next-page">
+                        <span>Suivant</span>
+                        <span class="icon">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    </a>
+                    <ul class="pagination-list" id="pagination-links">
+                        <!-- Les liens de pagination seront générés ici dynamiquement -->
+                    </ul>
+                </nav>
+                
+                <!-- Indicateur de page -->
+                <div class="has-text-centered mt-3 mb-3">
+                    <span class="tag is-info is-light" id="page-indicator">
+                        Page <span id="current-page-num">1</span> sur <span id="total-pages-num">1</span>
+                    </span>
+                </div>       
+            </div><!-- Fermeture de la div "box" -->
+        </div><!-- Fermeture de la div "column" -->
+    </div><!-- Fermeture de la div "columns" -->
+</div> <!-- Fermeture de la div "box" -->
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Au début du script, avant tout autre code
+        console.log("Nombre total d'exercices dans le DOM:", document.querySelectorAll('.exercise-item').length);
+        
+        // Variables pour la pagination
+        let currentPage = 1;
+        const itemsPerPage = 10; // Nombre d'exercices par page
+        let filteredItems = []; // Éléments après filtrage
+
+        // Gestion du formulaire de sélection d'exercices
+        document.querySelectorAll('form[id^="selectExerciseForm-"]').forEach(form => {
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: formData
+                });
+                if (response.ok) {
+                    const icon = form.querySelector('i');
+                    const box = form.closest('.box');
+                    if (icon.classList.contains('fa-check')) {
+                        icon.classList.remove('fa-check');
+                        icon.classList.add('fa-times');
+                        box.classList.add('has-background-primary');
+                    } else {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-check');
+                        box.classList.remove('has-background-primary');
+                    }
+                } else {
+                    console.error('Failed to select exercise');
+                }
+            });
+        });
+
+        // Fonction améliorée pour filtrer les exercices
+        function filterExercises(skipInitialFiltering = false) {
+            // Code de filtrage existant
+            const searchTerm = document.getElementById('search-filter').value.toLowerCase();
+            const selectedLevels = Array.from(document.querySelectorAll('.level-filter:checked')).map(el => el.value);
+            const selectedThemes = Array.from(document.querySelectorAll('.theme-filter:checked')).map(el => el.value);
+            const selectedTags = Array.from(document.querySelectorAll('.tag-filter:checked')).map(el => el.value);
+            
+            // Récupérer tous les exercices pour le filtrage
+            const allItems = document.querySelectorAll('.exercise-item');
+            
+            // Filtrer les éléments selon les critères sélectionnés
+            filteredItems = Array.from(allItems).filter(item => {
+                // Code de filtrage existant...
+                const level = item.dataset.level;
+                const theme = item.dataset.theme;
+                const tagsAttr = item.dataset.tags || '';
+                const tags = tagsAttr.split(',').filter(tag => tag.trim() !== '');
+                const content = item.textContent.toLowerCase();
+                
+                // Logique de filtrage
+                let levelMatch = selectedLevels.length === 0 || selectedLevels.includes(level);
+                let themeMatch = selectedThemes.length === 0 || selectedThemes.includes('all') || selectedThemes.includes(theme);
+                
+                let tagMatch = true;
+                if (selectedTags.length > 0) {
+                    if (tags.length === 0) {
+                        tagMatch = selectedTags.includes('no_tags');
+                    } else {
+                        const nonNoTagsSelectedTags = selectedTags.filter(tag => tag !== 'no_tags');
+                        tagMatch = nonNoTagsSelectedTags.length > 0 && 
+                                    nonNoTagsSelectedTags.some(selectedTag => tags.includes(selectedTag));
+                        
+                        if (nonNoTagsSelectedTags.length === 0 && selectedTags.includes('no_tags')) {
+                            tagMatch = false;
+                        }
+                    }
+                }
+                
+                let searchMatch = !searchTerm || content.includes(searchTerm);
+                
+                return levelMatch && themeMatch && tagMatch && searchMatch;
+            });
+            
+            console.log(`Après filtrage: ${filteredItems.length} éléments correspondent aux critères`);
+
+            // Réinitialiser à la première page après filtrage
+            currentPage = 1;
+            
+            // Mettre à jour la pagination et afficher les éléments
+            updatePagination();
+            displayItemsForCurrentPage();
+            
+            // Afficher ou masquer le message "aucun résultat"
+            const noResultsDiv = document.getElementById('no-results');
+            if (noResultsDiv) {
+                if (filteredItems.length === 0) {
+                    noResultsDiv.classList.remove('is-hidden');
+                } else {
+                    noResultsDiv.classList.add('is-hidden');
+                }
+            }
+            
+            console.log(`Exercices filtrés: ${filteredItems.length}/${allItems.length}`);
+        }
+        
+        // Fonction pour afficher uniquement les éléments de la page courante
+        function displayItemsForCurrentPage() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
+            
+            // Masquer tous les éléments d'abord
+            document.querySelectorAll('.exercise-item').forEach(item => {
+                item.style.display = 'none';
+            });
+            
+            // Afficher uniquement les éléments de la page courante
+            for (let i = startIndex; i < endIndex; i++) {
+                filteredItems[i].style.display = '';
+            }
+            
+            console.log(`Affichage des éléments de ${startIndex} à ${endIndex-1} sur ${filteredItems.length} éléments filtrés`);
+   
+
+            // Mettre à jour l'indicateur de page
+            document.getElementById('current-page-num').textContent = currentPage;
+        }
+        
+        // Fonction pour mettre à jour la pagination
+        function updatePagination() {
+            const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+            console.log(`Items filtrés: ${filteredItems.length}, Pages totales: ${totalPages}`);
+   
+            const paginationLinks = document.getElementById('pagination-links');
+            const prevButton = document.getElementById('prev-page');
+            const nextButton = document.getElementById('next-page');
+            
+            // Mettre à jour le compteur de pages
+            document.getElementById('total-pages-num').textContent = totalPages;
+            
+            // Désactiver les boutons précédent/suivant si nécessaire
+            prevButton.classList.toggle('is-disabled', currentPage === 1);
+            prevButton.setAttribute('aria-disabled', currentPage === 1);
+            nextButton.classList.toggle('is-disabled', currentPage === totalPages);
+            nextButton.setAttribute('aria-disabled', currentPage === totalPages);
+            
+            // Vider les liens de pagination
+            paginationLinks.innerHTML = '';
+            
+            // Cacher la pagination s'il n'y a qu'une seule page
+            const paginationContainer = document.getElementById('pagination-container');
+            if (totalPages <= 1) {
+                paginationContainer.classList.add('is-hidden');
+            } else {
+                paginationContainer.classList.remove('is-hidden');
+            }
+            
+            // Nombre de pages à afficher avant et après la page courante
+            const maxVisiblePages = 3;
+            const ellipsisThreshold = 1;
+            
+            let startPage = Math.max(1, currentPage - maxVisiblePages);
+            let endPage = Math.min(totalPages, currentPage + maxVisiblePages);
+            
+            // Afficher les liens de pagination avec un design moderne
+            // Première page
+            if (startPage > 1 + ellipsisThreshold) {
+                addPageLink(1);
+                if (startPage > 2) {
+                    addEllipsis();
+                }
+            }
+            
+            // Pages visibles autour de la page courante
+            for (let i = startPage; i <= endPage; i++) {
+                addPageLink(i);
+            }
+            
+            // Dernière page
+            if (endPage < totalPages - ellipsisThreshold) {
+                if (endPage < totalPages - 1) {
+                    addEllipsis();
+                }
+                addPageLink(totalPages);
+            }
+        }
+        
+        // Fonction pour ajouter un lien de pagination
+        function addPageLink(pageNum) {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            
+            // Appliquer les classes Bulma appropriées
+            a.className = 'pagination-link' + (pageNum === currentPage ? ' is-current has-background-info has-text-white' : '');
+            a.setAttribute('aria-label', `Page ${pageNum}`);
+            a.textContent = pageNum;
+            
+            // Ajouter l'événement pour changer de page
+            a.addEventListener('click', () => {
+                currentPage = pageNum;
+                updatePagination();
+                displayItemsForCurrentPage();
+                // Défiler vers le haut de manière fluide
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            li.appendChild(a);
+            document.getElementById('pagination-links').appendChild(li);
+        }
+        
+        // Fonction pour ajouter une ellipse
+        function addEllipsis() {
+            const li = document.createElement('li');
+            const span = document.createElement('span');
+            span.className = 'pagination-ellipsis';
+            span.innerHTML = '&hellip;';
+            li.appendChild(span);
+            document.getElementById('pagination-links').appendChild(li);
+        }
+        
+        // Gérer les clics sur les boutons Précédent/Suivant
+        document.getElementById('prev-page').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+                displayItemsForCurrentPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+        
+        document.getElementById('next-page').addEventListener('click', function() {
+            const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+                displayItemsForCurrentPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+        
+        // Ajout des écouteurs d'événements pour les filtres
+        document.getElementById('search-filter').addEventListener('input', filterExercises);
+        document.querySelectorAll('.level-filter, .theme-filter, .tag-filter').forEach(checkbox => {
+            checkbox.addEventListener('change', filterExercises);
+        });
+        
+        // Fonction pour réinitialiser les filtres
+        document.getElementById('reset-filters').addEventListener('click', () => {
+            document.getElementById('search-filter').value = '';
+            document.querySelectorAll('.level-filter, .theme-filter, .tag-filter').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            // Cocher "Tous les thèmes" par défaut
+            document.querySelector('.theme-filter[value="all"]').checked = true;
+            filterExercises();
+        });
+        
+        // Initialiser la pagination au chargement sans filtrage initial
+        filterExercises(); // Passer true pour afficher tous les éléments
+    });
+    
+    // Fonction pour basculer l'affichage des sections de filtres
+    function toggleFilterSection(header) {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('.fas');
+        
+        if (content.classList.contains('is-collapsed')) {
+            content.classList.remove('is-collapsed');
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            content.classList.add('is-collapsed');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+        }
+    }
+</script>
 {% endblock %}

@@ -30,6 +30,9 @@ from docx_exporter import DocxExporter
 def home():
     exercices = Exercice.query.all()
     selected_exercises = session.get('selected_exercises', [])
+
+    exercices.sort(key=lambda x: x.id)
+    print(len(exercices))
     return render_template('index.html', exercices=exercices, selected_exercises=selected_exercises)
 
 
@@ -160,16 +163,33 @@ def create_exercise():
             correction=request.form.get('correction', ''),
             latex_correction=request.form.get('latex_correction', '')
         )
+        
+        # Traiter les tags - ajout de ce bloc de code
+        print('Creating exercise')
+
+        tag_names = request.form.getlist('tags')
+        print(tag_names)
+        
+        for tag_name in tag_names:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            print('Adding tag')
+            print(tag)
+            if tag is None:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+            new_exercice.tags.append(tag)
+        
         db.session.add(new_exercice)
         db.session.commit()
         return redirect(url_for('home'))
     else:
+        all_tags = Tag.query.all()  # Adapter selon votre modèle de données
         # Récupérer tous les thèmes existants
         existing_themes = db.session.query(Exercice.theme).distinct().all()
         unique_themes = sorted([theme[0] for theme in existing_themes])
         
         # Afficher le formulaire de création
-        return render_template('create_exercise.html', themes=unique_themes)
+        return render_template('create_exercise.html', all_tags=all_tags, themes=unique_themes)
 
 if __name__ == '__main__':
     app.run(debug=True)
