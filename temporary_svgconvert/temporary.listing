@@ -1,7 +1,0 @@
-  def nb_utilisateurs():
-      n = 0
-      u = 50
-      while ............ :
-        ............
-        ............
-      return n

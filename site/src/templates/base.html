@@ -61,21 +61,21 @@
         </div>
     </section>
 
+    <nav class="navbar is-primary">
+        <div class="container">
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/">Accueil</a>
+                    <a class="navbar-item" href="/create_exercise">Créer un exercice</a>
+                    <a class="navbar-item" href="/export_menu">Exporter les exercices</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <section class="section">
         <div class="container">
-            <div class="columns">
-                <div class="column is-one-quarter">
-                    <aside class="menu">
-                        <p class="menu-label">
-                            Navigation
-                        </p>
-                        <ul class="menu-list">
-                            <li><a href="/">Accueil</a></li>
-                            <li><a href="/create_exercise">Créer un exercice</a></li>
-                            <li><a href="/export_menu">Exporter les exercices</a></li>
-                        </ul>
-                    </aside>
-                </div>
+            <div class="columns"></div>
                 <div class="column">
                     {% block content %}{% endblock %}
                 </div>
