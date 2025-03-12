@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.9.13)  11 MAR 2025 09:35
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.9.13)  12 MAR 2025 14:07
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -909,15 +909,15 @@ Package translations Info: loading dictionary `translations-basic-dictionary' fo
 \c__nicematrix_shift_Ldots_last_row_dim=\dimen377
 \c__nicematrix_shift_exterior_Vdots_dim=\dimen378
 \c__nicematrix_innersep_middle_dim=\dimen379
-LaTeX Font Info:    Trying to load font information for U+msa on input line 7.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 44.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 7.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 44.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for U+esvect on input line 7.
+LaTeX Font Info:    Trying to load font information for U+esvect on input line 44.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/esvect/uesvect.fd
 File: uesvect.fd 
 ) [1
@@ -929,12 +929,12 @@ L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 46535 strings out of 474773
- 1038594 string characters out of 5757724
- 1937839 words of memory out of 5000000
- 68050 multiletter control sequences out of 15000+600000
- 560063 words of font info for 52 fonts, out of 8000000 for 9000
+ 46184 strings out of 474773
+ 1032691 string characters out of 5757724
+ 1923839 words of memory out of 5000000
+ 67703 multiletter control sequences out of 15000+600000
+ 560047 words of font info for 50 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 117i,6n,121p,2853b,1046s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,5n,121p,2853b,548s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on temporary.xdv (1 page, 20228 bytes).
+Output written on temporary.xdv (1 page, 7304 bytes).
