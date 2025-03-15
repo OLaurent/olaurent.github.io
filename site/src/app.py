@@ -30,9 +30,6 @@ from docx_exporter import DocxExporter
 def home():
     exercices = Exercice.query.all()
     selected_exercises = session.get('selected_exercises', [])
-
-    exercices.sort(key=lambda x: x.id)
-    print(len(exercices))
     return render_template('index.html', exercices=exercices, selected_exercises=selected_exercises)
 
 
