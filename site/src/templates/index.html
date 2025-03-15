@@ -612,6 +612,31 @@
             checkbox.addEventListener('change', filterExercises);
         });
         
+        // Ajoutez ce code après vos écouteurs d'événements existants pour les cases à cocher
+        document.querySelectorAll('.theme-filter').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                // Si on coche "Tous les thèmes", décocher tous les autres thèmes
+                if (this.value === 'all' && this.checked) {
+                    document.querySelectorAll('.theme-filter:not([value="all"])').forEach(otherCheckbox => {
+                        otherCheckbox.checked = false;
+                    });
+                } 
+                // Si on coche un thème spécifique, décocher "Tous les thèmes"
+                else if (this.value !== 'all' && this.checked) {
+                    document.querySelector('.theme-filter[value="all"]').checked = false;
+                }
+                
+                // S'il n'y a aucun thème spécifique sélectionné, cocher automatiquement "Tous les thèmes"
+                const specificThemesChecked = Array.from(document.querySelectorAll('.theme-filter:not([value="all"]):checked')).length > 0;
+                if (!specificThemesChecked) {
+                    document.querySelector('.theme-filter[value="all"]').checked = true;
+                }
+                
+                // Appeler la fonction de filtrage après avoir modifié les états des cases à cocher
+                filterExercises();
+            });
+        });
+        
         // Fonction pour réinitialiser les filtres
         document.getElementById('reset-filters').addEventListener('click', () => {
             document.getElementById('search-filter').value = '';
