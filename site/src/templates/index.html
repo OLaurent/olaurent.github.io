@@ -150,18 +150,12 @@
                         <span class="icon"><i class="fas fa-chevron-down"></i></span>
                     </div>
                     <div class="filter-content">
+                        {% for level in levels %}
                         <label class="checkbox-container">
-                            <input type="checkbox" class="level-filter" value="Seconde" checked="{{ request.args.get('level') == 'Seconde' or not request.args.get('level') }}">
-                            Seconde
+                            <input type="checkbox" class="level-filter" value="{{ level.id }}" data-name="{{ level.name }}" checked="{{ request.args.get('level_id') == level.id|string or not request.args.get('level_id') }}">
+                            {{ level.name }}
                         </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" class="level-filter" value="Première" checked="{{ request.args.get('level') == 'Première' }}">
-                            Première
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" class="level-filter" value="Terminale" checked="{{ request.args.get('level') == 'Terminale' }}">
-                            Terminale
-                        </label>
+                        {% endfor %}
                     </div>
                 </div><!-- Fermeture de la div "filter-section" -->
                 
@@ -172,23 +166,21 @@
                         <span class="icon"><i class="fas fa-chevron-down"></i></span>
                     </div>
                     <div class="filter-content">
-                        {% set unique_themes = [] %}
-                        {% for exercice in exercices %}
-                            {% if exercice.theme not in unique_themes %}
-                                {% set _ = unique_themes.append(exercice.theme) %}
-                            {% endif %}
-                        {% endfor %}
-                        
                         <label class="checkbox-container">
-                            <input type="checkbox" class="theme-filter" value="all" checked="{{ not request.args.get('theme') or request.args.get('theme') == 'all' }}">
+                            <input type="checkbox" class="theme-filter" value="all" checked="{{ not request.args.get('theme_id') or request.args.get('theme_id') == 'all' }}">
                             Tous les thèmes
                         </label>
                         
-                        {% for theme in unique_themes | sort %}
-                        <label class="checkbox-container">
-                            <input type="checkbox" class="theme-filter" value="{{ theme }}" {{ 'checked' if request.args.get('theme') == theme }}>
-                            {{ theme }}
-                        </label>
+                        {% for level in levels %}
+                        <div class="theme-level-group" data-level-id="{{ level.id }}">
+                            <strong class="is-size-7">{{ level.name }}</strong>
+                            {% for theme in level.themes %}
+                            <label class="checkbox-container ml-3">
+                                <input type="checkbox" class="theme-filter" value="{{ theme.id }}" data-level-id="{{ level.id }}" data-name="{{ theme.name }}" {{ 'checked' if request.args.get('theme_id') == theme.id|string }}>
+                                {{ theme.name }}
+                            </label>
+                            {% endfor %}
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
@@ -206,20 +198,16 @@
                             Sans tag
                         </label>
                         
-                        {% set unique_tags = [] %}
-                        {% for exercice in exercices %}
-                            {% for tag in exercice.tags %}
-                                {% if tag.name not in unique_tags %}
-                                    {% set _ = unique_tags.append(tag.name) %}
-                                {% endif %}
+                        {% for level in levels %}
+                        <div class="tag-level-group" data-level-id="{{ level.id }}">
+                            <strong class="is-size-7">{{ level.name }}</strong>
+                            {% for tag in level.tags %}
+                            <label class="checkbox-container ml-3">
+                                <input type="checkbox" class="tag-filter" value="{{ tag.id }}" data-level-id="{{ level.id }}" data-name="{{ tag.name }}">
+                                {{ tag.name }}
+                            </label>
                             {% endfor %}
-                        {% endfor %}
-                        
-                        {% for tag in unique_tags | sort %}
-                        <label class="checkbox-container">
-                            <input type="checkbox" class="tag-filter" value="{{ tag }}">
-                            {{ tag }}
-                        </label>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
@@ -230,6 +218,16 @@
                     </span>
                     <span>Réinitialiser les filtres</span>
                 </button>
+                
+                <!-- Lien vers la gestion des métadonnées si en mode dev -->
+                {% if dev_mode %}
+                <a href="{{ url_for('manage_metadata') }}" class="button is-primary is-small is-fullwidth mt-4">
+                    <span class="icon is-small">
+                        <i class="fas fa-cog"></i>
+                    </span>
+                    <span>Gérer niveaux, thèmes et tags</span>
+                </a>
+                {% endif %}
             </div>
         </div>
         
@@ -245,21 +243,24 @@
                 <div class="columns is-multiline">
                     {% for exercice in exercices %}
                         <div class="column is-full exercise-item" 
-                            data-level="{{ exercice.level|default('') }}" 
-                            data-theme="{{ exercice.theme|default('') }}" 
-                            data-tags="{% for tag in exercice.tags %}{{ tag.name|default(tag) }}{% if not loop.last %},{% endif %}{% endfor %}">
+                            data-level-id="{{ exercice.level_id }}" 
+                            data-level-name="{{ exercice.level_rel.name }}"
+                            data-theme-id="{{ exercice.theme_id }}"
+                            data-theme-name="{{ exercice.theme_rel.name }}" 
+                            data-tags-ids="{% for tag in exercice.tags %}{{ tag.id }}{% if not loop.last %},{% endif %}{% endfor %}"
+                            data-tags-names="{% for tag in exercice.tags %}{{ tag.name }}{% if not loop.last %},{% endif %}{% endfor %}">
                             <div class="box {% if exercice.id in selected_exercises %}has-background-primary{% endif %}">
                                 <div class="field is-grouped is-grouped-multiline">
                                     <div class="control">
                                         <div class="tags has-addons">
                                             <span class="tag is-dark">Niveau</span>
-                                            <span class="tag is-success">{{ exercice.level }}</span>
+                                            <span class="tag is-success">{{ exercice.level_rel.name }}</span>
                                         </div>
                                     </div>
                                     <div class="control">
                                         <div class="tags has-addons">
                                             <span class="tag is-dark">Thème</span>
-                                            <span class="tag is-info">{{ exercice.theme }}</span>
+                                            <span class="tag is-info">{{ exercice.theme_rel.name }}</span>
                                         </div>
                                     </div>
                                     <div class="tags">
@@ -406,40 +407,91 @@
             });
         });
 
+        // Fonction pour filtrer dynamiquement les thèmes et tags en fonction du niveau sélectionné
+        function updateThemesAndTagsVisibility() {
+            const selectedLevelIds = Array.from(document.querySelectorAll('.level-filter:checked')).map(el => el.value);
+            console.log("Niveaux sélectionnés:", selectedLevelIds);
+            
+            // Afficher/masquer les thèmes en fonction des niveaux sélectionnés
+            document.querySelectorAll('.theme-level-group').forEach(group => {
+                const levelId = group.dataset.levelId;
+                if (selectedLevelIds.length === 0 || selectedLevelIds.includes(levelId)) {
+                    group.style.display = '';
+                } else {
+                    group.style.display = 'none';
+                    // Décocher les thèmes des niveaux non sélectionnés
+                    group.querySelectorAll('.theme-filter').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                }
+            });
+            
+            // Afficher/masquer les tags en fonction des niveaux sélectionnés
+            document.querySelectorAll('.tag-level-group').forEach(group => {
+                const levelId = group.dataset.levelId;
+                if (selectedLevelIds.length === 0 || selectedLevelIds.includes(levelId)) {
+                    group.style.display = '';
+                } else {
+                    group.style.display = 'none';
+                    // Décocher les tags des niveaux non sélectionnés
+                    group.querySelectorAll('.tag-filter').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                }
+            });
+            
+            // Appliquer les filtres après mise à jour
+            filterExercises();
+        }
+
         // Fonction améliorée pour filtrer les exercices
-        function filterExercises(skipInitialFiltering = false) {
+        function filterExercises() {
             // Code de filtrage existant
             const searchTerm = document.getElementById('search-filter').value.toLowerCase();
-            const selectedLevels = Array.from(document.querySelectorAll('.level-filter:checked')).map(el => el.value);
-            const selectedThemes = Array.from(document.querySelectorAll('.theme-filter:checked')).map(el => el.value);
-            const selectedTags = Array.from(document.querySelectorAll('.tag-filter:checked')).map(el => el.value);
+            
+            // Récupération des filtres par ID 
+            const selectedLevelIds = Array.from(document.querySelectorAll('.level-filter:checked')).map(el => el.value);
+            const selectedThemeIds = Array.from(document.querySelectorAll('.theme-filter:checked')).map(el => el.value);
+            const selectedTagIds = Array.from(document.querySelectorAll('.tag-filter:checked')).map(el => el.value);
+            
+            console.log("Filtrage - Niveaux:", selectedLevelIds);
+            console.log("Filtrage - Thèmes:", selectedThemeIds);
+            console.log("Filtrage - Tags:", selectedTagIds);
             
             // Récupérer tous les exercices pour le filtrage
             const allItems = document.querySelectorAll('.exercise-item');
             
             // Filtrer les éléments selon les critères sélectionnés
             filteredItems = Array.from(allItems).filter(item => {
-                // Code de filtrage existant...
-                const level = item.dataset.level;
-                const theme = item.dataset.theme;
-                const tagsAttr = item.dataset.tags || '';
-                const tags = tagsAttr.split(',').filter(tag => tag.trim() !== '');
+                const levelId = item.dataset.levelId;
+                const themeId = item.dataset.themeId;
+                const tagsIdsAttr = item.dataset.tagsIds || '';
+                const tagsIds = tagsIdsAttr.split(',').filter(id => id.trim() !== '');
                 const content = item.textContent.toLowerCase();
                 
                 // Logique de filtrage
-                let levelMatch = selectedLevels.length === 0 || selectedLevels.includes(level);
-                let themeMatch = selectedThemes.length === 0 || selectedThemes.includes('all') || selectedThemes.includes(theme);
+                let levelMatch = selectedLevelIds.length === 0 || selectedLevelIds.includes(levelId);
                 
+                // Vérifier si "Tous les thèmes" est sélectionné ou si le thème de l'exercice correspond
+                let themeMatch = selectedThemeIds.includes('all') || 
+                                 selectedThemeIds.length === 0 ||
+                                 selectedThemeIds.includes(themeId);
+                
+                // Gestion des tags avec cas spécial "no_tags"
                 let tagMatch = true;
-                if (selectedTags.length > 0) {
-                    if (tags.length === 0) {
-                        tagMatch = selectedTags.includes('no_tags');
+                if (selectedTagIds.length > 0) {
+                    // Cas des exercices sans tags
+                    if (tagsIds.length === 0) {
+                        tagMatch = selectedTagIds.includes('no_tags');
                     } else {
-                        const nonNoTagsSelectedTags = selectedTags.filter(tag => tag !== 'no_tags');
-                        tagMatch = nonNoTagsSelectedTags.length > 0 && 
-                                    nonNoTagsSelectedTags.some(selectedTag => tags.includes(selectedTag));
+                        // Cas des exercices avec tags
+                        const nonNoTagsSelectedIds = selectedTagIds.filter(id => id !== 'no_tags');
                         
-                        if (nonNoTagsSelectedTags.length === 0 && selectedTags.includes('no_tags')) {
+                        if (nonNoTagsSelectedIds.length > 0) {
+                            // Vérifier si au moins un tag de l'exercice correspond aux tags sélectionnés
+                            tagMatch = nonNoTagsSelectedIds.some(selectedId => tagsIds.includes(selectedId));
+                        } else if (selectedTagIds.includes('no_tags')) {
+                            // Si seul "no_tags" est sélectionné, ne pas afficher les exercices avec tags
                             tagMatch = false;
                         }
                     }
@@ -462,11 +514,7 @@
             // Afficher ou masquer le message "aucun résultat"
             const noResultsDiv = document.getElementById('no-results');
             if (noResultsDiv) {
-                if (filteredItems.length === 0) {
-                    noResultsDiv.classList.remove('is-hidden');
-                } else {
-                    noResultsDiv.classList.add('is-hidden');
-                }
+                noResultsDiv.classList.toggle('is-hidden', filteredItems.length > 0);
             }
             
             console.log(`Exercices filtrés: ${filteredItems.length}/${allItems.length}`);
@@ -608,7 +656,14 @@
         
         // Ajout des écouteurs d'événements pour les filtres
         document.getElementById('search-filter').addEventListener('input', filterExercises);
-        document.querySelectorAll('.level-filter, .theme-filter, .tag-filter').forEach(checkbox => {
+        
+        // Écouteurs pour les filtres de niveau avec mise à jour des thèmes et tags visibles
+        document.querySelectorAll('.level-filter').forEach(checkbox => {
+            checkbox.addEventListener('change', updateThemesAndTagsVisibility);
+        });
+        
+        // Écouteurs pour les filtres de thème et tag
+        document.querySelectorAll('.theme-filter, .tag-filter').forEach(checkbox => {
             checkbox.addEventListener('change', filterExercises);
         });
         
@@ -645,6 +700,12 @@
             });
             // Cocher "Tous les thèmes" par défaut
             document.querySelector('.theme-filter[value="all"]').checked = true;
+            
+            // Afficher à nouveau tous les groupes de thèmes et tags
+            document.querySelectorAll('.theme-level-group, .tag-level-group').forEach(group => {
+                group.style.display = '';
+            });
+            
             filterExercises();
         });
         

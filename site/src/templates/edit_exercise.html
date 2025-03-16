@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,26 +67,41 @@
                 <div class="field">
                     <label class="label">Niveau</label>
                     <div class="control">
-                        <input class="input" type="text" name="level" value="{{ exercice.level }}">
+                        <div class="select is-fullwidth">
+                            <select id="level_id" name="level_id" required>
+                                <option value="">Sélectionnez un niveau</option>
+                                {% for level in levels %}
+                                    <option value="{{ level.id }}" {% if exercice.level_id == level.id %}selected{% endif %}>{{ level.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div class="field">
                     <label class="label">Thème</label>
                     <div class="control">
-                        <input class="input" type="text" name="theme" value="{{ exercice.theme }}">
+                        <div class="select is-fullwidth">
+                            <select id="theme_id" name="theme_id" required>
+                                <option value="">Sélectionnez d'abord un niveau</option>
+                                {% for theme in themes %}
+                                    <option value="{{ theme.id }}" data-level-id="{{ theme.level_id }}" {% if exercice.theme_id == theme.id %}selected{% endif %}>{{ theme.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
+                
                 <div class="field">
                     <label class="label">Tags</label>
                     <div class="control">
                         <select class="select2-tags" name="tags" id="tags" multiple="multiple" style="width: 100%;">
                             {% for tag in all_tags %}
-                                <option value="{{ tag.name }}" {% if tag in exercice.tags %}selected{% endif %}>{{ tag.name }}</option>
+                                <option value="{{ tag.id }}" data-level-id="{{ tag.level_id }}" {% if tag in exercice.tags %}selected{% endif %}>{{ tag.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <p class="help">Sélectionnez des tags existants ou ajoutez-en de nouveaux</p>
+                    <p class="help">Sélectionnez des tags existants pour le niveau choisi</p>
                 </div>
 
                 <div class="field">
@@ -145,78 +160,236 @@
         </div>
     </section>
 
-
     <script>
-        $(document).ready(function() {
-            $('.select2-tags').select2({
-                tags: true,
-                tokenSeparators: [','],
-                placeholder: "Sélectionnez ou ajoutez des tags...",
-                allowClear: true,
-                createTag: function(params) {
-                    return {
-                        id: params.term,
-                        text: params.term,
-                        newTag: true
-                    }
-                }
-            });
+    $(document).ready(function() {
+        // Stocker une copie de tous les tags originaux pour pouvoir les restaurer
+        const allOriginalTags = $('#tags option').clone();
+        
+        // Stocker les valeurs initiales pour les restaurer si nécessaire
+        const initialThemeId = $('#theme_id').val();
+        const initialLevelId = $('#level_id').val();
+        
+        // Configuration initiale de Select2 pour les tags avec options avancées
+        $('.select2-tags').select2({
+            placeholder: "Sélectionnez des tags...",
+            allowClear: true,
+            templateResult: formatTagOption,
+            templateSelection: formatTagSelection
         });
         
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fonction pour mettre à jour la prévisualisation
-            function updatePreview(inputId, previewId) {
-                const textarea = document.getElementById(inputId);
-                const preview = document.getElementById(previewId);
+        // Fonction pour formater l'affichage des options de tags dans le dropdown
+        function formatTagOption(tag) {
+            if (!tag.id) {
+                return tag.text;
+            }
+            
+            const $tag = $(tag.element);
+            const tagLevelId = $tag.data('level-id');
+            const currentLevelId = $('#level_id').val();
+            
+            // Si le tag appartient au niveau actuel, l'afficher normalement
+            if (tagLevelId == currentLevelId) {
+                return $('<span>' + tag.text + '</span>');
+            } 
+            
+            // Sinon, le désactiver visuellement
+            return $('<span style="opacity: 0.6; text-decoration: line-through;">' + tag.text + ' (niveau différent)</span>');
+        }
+        
+        // Fonction pour formater l'affichage des tags sélectionnés
+        function formatTagSelection(tag) {
+            return tag.text;
+        }
+
+        // Fonction améliorée pour filtrer les thèmes en fonction du niveau sélectionné
+        function updateThemeOptions() {
+            const selectedLevelId = $('#level_id').val();
+            console.log('Niveau sélectionné:', selectedLevelId);
+            
+            // Masquer tous les thèmes d'abord
+            $('#theme_id option').hide();
+            $('#theme_id option[value=""]').text('Sélectionnez un thème').show();
+            
+            if (selectedLevelId) {
+                // Afficher uniquement les thèmes du niveau sélectionné
+                $(`#theme_id option[data-level-id="${selectedLevelId}"]`).show();
                 
-                if (!textarea || !preview) {
-                    console.error(`Éléments non trouvés: ${inputId} ou ${previewId}`);
-                    return;
+                // Si aucun thème n'est disponible pour ce niveau, afficher un message
+                if ($(`#theme_id option[data-level-id="${selectedLevelId}"]`).length === 0) {
+                    $('#theme_id option[value=""]').text('Aucun thème disponible pour ce niveau').show();
+                    $('#theme_id').val('');
+                }
+            } else {
+                $('#theme_id option[value=""]').text('Sélectionnez d\'abord un niveau').show();
+            }
+            
+            // Vérifier si le thème actuellement sélectionné est disponible pour le niveau choisi
+            const currentThemeId = $('#theme_id').val();
+            
+            if (currentThemeId && currentThemeId !== '' && !$(`#theme_id option[value="${currentThemeId}"]:visible`).length) {
+                console.log(`Le thème ${currentThemeId} n'est pas visible pour le niveau ${selectedLevelId}`);
+                $('#theme_id').val('');
+            }
+        }
+
+        // Fonction améliorée pour gérer les tags en fonction du niveau sélectionné
+        function updateTagOptions() {
+            const selectedLevelId = $('#level_id').val();
+            const exerciceTags = {{ exercice_tag_ids | tojson }} || [];
+            
+            // Détruire l'instance Select2 pour faire des modifications proprement
+            $('#tags').select2('destroy');
+            
+            // Vider le sélecteur de tags
+            $('#tags').empty();
+            
+            // Ajouter tous les tags mais avec des attributs de niveau
+            allOriginalTags.each(function() {
+                const $option = $(this).clone();
+                const tagLevelId = $option.data('level-id');
+                
+                // Ajouter l'attribut disabled pour les tags qui ne correspondent pas au niveau actuel
+                if (selectedLevelId && tagLevelId != selectedLevelId) {
+                    $option.prop('disabled', true);
+                } else {
+                    $option.prop('disabled', false);
                 }
                 
-                // Affichage de débogage
-                console.log(`Initialisation de ${inputId} avec valeur:`, textarea.value);
+                // Conserver la sélection pour les tags de l'exercice
+                if (exerciceTags.includes(parseInt($option.val()))) {
+                    $option.prop('selected', true);
+                }
                 
-                // Met à jour la prévisualisation lors de la saisie
-                textarea.addEventListener('input', function() {
-                    console.log(`Mise à jour de ${previewId} avec:`, this.value);
-                    preview.innerHTML = this.value;
-                    
-                    // Re-render MathJax content
-                    if (window.MathJax) {
-                        MathJax.typesetPromise([preview]).catch(function(err) {
-                            console.log('MathJax error:', err);
-                        });
-                    } else {
-                        console.warn('MathJax n\'est pas disponible');
-                    }
-                });
-                
-                // Initialiser la prévisualisation au chargement avec un léger délai
-                // pour s'assurer que MathJax est chargé
-                setTimeout(function() {
-                    preview.innerHTML = textarea.value;
-                    if (window.MathJax) {
-                        MathJax.typesetPromise([preview]).catch(function(err) {
-                            console.log('MathJax error:', err);
-                        });
-                    }
-                }, 500);
-            }
+                $('#tags').append($option);
+            });
             
-            // S'assurer que MathJax est chargé
-            if (typeof MathJax === 'undefined') {
-                console.warn('MathJax n\'est pas encore disponible, chargement en cours...');
-            }
-            
-            // Initialiser les prévisualisations avec un délai pour être sûr que DOM est prêt
-            setTimeout(function() {
-                console.log('Initialisation des prévisualisations...');
-                updatePreview('content-textarea', 'content-preview');
-                updatePreview('correction-textarea', 'correction-preview');
-            }, 300);
-        });
-    </script>
+            // Réinitialiser Select2
+            $('#tags').select2({
+                placeholder: "Sélectionnez des tags...",
+                allowClear: true,
+                templateResult: formatTagOption,
+                templateSelection: formatTagSelection
+            });
+        }
 
+        // Événement de changement de niveau
+        $('#level_id').on('change', function() {
+            // Mettre à jour le thème
+            updateThemeOptions();
+            
+            // Mettre à jour les tags avec une petite temporisation pour éviter les conflits
+            setTimeout(updateTagOptions, 50);
+        });
+
+        // Initialisation spéciale pour conserver la sélection initiale
+        if (initialLevelId) {
+            $('#level_id').val(initialLevelId);
+            
+            // Afficher les thèmes du niveau initial
+            $(`#theme_id option`).hide();
+            $(`#theme_id option[value=""]`).show();
+            $(`#theme_id option[data-level-id="${initialLevelId}"]`).show();
+            
+            // Réappliquer la sélection de thème initiale
+            if (initialThemeId) {
+                $('#theme_id').val(initialThemeId);
+                console.log(`Sélection initiale: niveau=${initialLevelId}, thème=${initialThemeId}`);
+            }
+            
+            // Mettre à jour les tags
+            updateTagOptions();
+        } else {
+            // Comportement normal si pas de sélection initiale
+            updateThemeOptions();
+            updateTagOptions();
+        }
+        
+        // Validation avant soumission du formulaire
+        $('form').on('submit', function(e) {
+            const selectedLevelId = $('#level_id').val();
+            const selectedThemeId = $('#theme_id').val();
+            const selectedTags = $('#tags').val() || [];
+            
+            if (!selectedLevelId) {
+                e.preventDefault();
+                alert("Veuillez sélectionner un niveau.");
+                return false;
+            }
+            
+            if (!selectedThemeId) {
+                e.preventDefault();
+                alert("Veuillez sélectionner un thème.");
+                return false;
+            }
+            
+            // Vérifier si des tags de niveaux différents sont sélectionnés
+            let invalidTagsSelected = false;
+            $('#tags option:selected').each(function() {
+                if ($(this).data('level-id') != selectedLevelId) {
+                    invalidTagsSelected = true;
+                    return false; // sortir de la boucle
+                }
+            });
+            
+            if (invalidTagsSelected) {
+                if (!confirm("Attention: certains tags sélectionnés n'appartiennent pas au niveau choisi. Voulez-vous continuer?")) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+    });
+    
+    // Le reste du code reste inchangé
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fonction pour mettre à jour la prévisualisation (inchangée)
+        function updatePreview(inputId, previewId) {
+            const textarea = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            
+            if (!textarea || !preview) {
+                console.error(`Éléments non trouvés: ${inputId} ou ${previewId}`);
+                return;
+            }
+            
+            // Affichage de débogage
+            console.log(`Initialisation de ${inputId} avec valeur:`, textarea.value);
+            
+            // Met à jour la prévisualisation lors de la saisie
+            textarea.addEventListener('input', function() {
+                console.log(`Mise à jour de ${previewId} avec:`, this.value);
+                preview.innerHTML = this.value;
+                
+                // Re-render MathJax content
+                if (window.MathJax) {
+                    MathJax.typesetPromise([preview]).catch(function(err) {
+                        console.log('MathJax error:', err);
+                    });
+                } else {
+                    console.warn('MathJax n\'est pas disponible');
+                }
+            });
+            
+            // Initialiser la prévisualisation au chargement
+            setTimeout(function() {
+                preview.innerHTML = textarea.value;
+                if (window.MathJax) {
+                    MathJax.typesetPromise([preview]).catch(function(err) {
+                        console.log('MathJax error:', err);
+                    });
+                }
+            }, 500);
+        }
+        
+        // Initialiser les prévisualisations
+        setTimeout(function() {
+            console.log('Initialisation des prévisualisations...');
+            updatePreview('content-textarea', 'content-preview');
+            updatePreview('correction-textarea', 'correction-preview');
+        }, 300);
+    });
+</script>
 </body>
 </html>
