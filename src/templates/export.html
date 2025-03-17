@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="box">
+            <h1 class="title">Exporter les Exercices Sélectionnés</h1>
+            <div class="box">
+                <h2 class="subtitle">Contenu des Exercices Sélectionnés</h2>
+                <div class="content" id="exercises-list">
+                    {% for exercice in exercices %}
+                        <div class="exercise" data-index="{{ loop.index0 }}">
+                            <h3>Exercice n°{{ loop.index }}</h3>
+                            <p>{{ exercice.content | safe }}</p>
+                            <hr>
+                        </div>
+                    {% endfor %}
+                </div>
+                <form id="export-form" action="{{ url_for('export.exercises') }}" method="get">
+                    <input type="hidden" name="order" id="exercises-order">
+                    <div class="field">
+                        <label class="label">Format d'exportation</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="format" value="json" checked>
+                                JSON
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="format" value="tex">
+                                LaTeX
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-primary" type="submit">Exporter</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const exercisesList = document.getElementById('exercises-list');
+    const exportForm = document.getElementById('export-form');
+    const exercisesOrderInput = document.getElementById('exercises-order');
+
+    new Sortable(exercisesList, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: () => {
+            const order = Array.from(exercisesList.children).map(exercise => exercise.dataset.index);
+            exercisesOrderInput.value = order.join(',');
+        }
+    });
+
+    exportForm.addEventListener('submit', () => {
+        const order = Array.from(exercisesList.children).map(exercise => exercise.dataset.index);
+        exercisesOrderInput.value = order.join(',');
+    });
+});
+</script>
+{% endblock %}
