@@ -361,7 +361,7 @@
                 <!-- Indicateur de page -->
                 <div class="has-text-centered mt-3 mb-3">
                     <span class="tag is-info is-light" id="page-indicator">
-                        Page <span id="current-page-num">1</span> sur <span id="total-pages-num">1</span>
+                        Page&nbsp;<span id="current-page-num">1</span>&nbsp;sur&nbsp;<span id="total-pages-num">1</span>
                     </span>
                 </div>       
             </div><!-- Fermeture de la div "box" -->
@@ -445,108 +445,164 @@
         }
 
         // Fonction améliorée pour filtrer les exercices
-        function filterExercises() {
-            // Code de filtrage existant
-            const searchTerm = document.getElementById('search-filter').value.toLowerCase();
+        // Remplacer également la fonction de filtrage pour garantir le bon fonctionnement
+    function filterExercises() {
+        const searchTerm = document.getElementById('search-filter').value.toLowerCase();
+        
+        // Récupération des filtres par ID 
+        const selectedLevelIds = Array.from(document.querySelectorAll('.level-filter:checked')).map(el => el.value);
+        const selectedThemeIds = Array.from(document.querySelectorAll('.theme-filter:checked')).map(el => el.value);
+        const selectedTagIds = Array.from(document.querySelectorAll('.tag-filter:checked')).map(el => el.value);
+        
+        // Récupérer tous les exercices pour le filtrage
+        const allItems = document.querySelectorAll('.exercise-item');
+        console.log("Total des exercices avant filtrage:", allItems.length);
+        
+        // Filtrer les éléments selon les critères sélectionnés
+        filteredItems = Array.from(allItems).filter(item => {
+            const levelId = item.dataset.levelId;
+            const themeId = item.dataset.themeId;
+            const tagsIdsAttr = item.dataset.tagsIds || '';
+            const tagsIds = tagsIdsAttr.split(',').filter(id => id.trim() !== '');
+            const content = item.textContent.toLowerCase();
             
-            // Récupération des filtres par ID 
-            const selectedLevelIds = Array.from(document.querySelectorAll('.level-filter:checked')).map(el => el.value);
-            const selectedThemeIds = Array.from(document.querySelectorAll('.theme-filter:checked')).map(el => el.value);
-            const selectedTagIds = Array.from(document.querySelectorAll('.tag-filter:checked')).map(el => el.value);
+            // Logique de filtrage simplifiée pour le débogage
+            let levelMatch = selectedLevelIds.length === 0 || selectedLevelIds.includes(levelId);
+            let themeMatch = selectedThemeIds.includes('all') || selectedThemeIds.length === 0 || selectedThemeIds.includes(themeId);
             
-            console.log("Filtrage - Niveaux:", selectedLevelIds);
-            console.log("Filtrage - Thèmes:", selectedThemeIds);
-            console.log("Filtrage - Tags:", selectedTagIds);
-            
-            // Récupérer tous les exercices pour le filtrage
-            const allItems = document.querySelectorAll('.exercise-item');
-            
-            // Filtrer les éléments selon les critères sélectionnés
-            filteredItems = Array.from(allItems).filter(item => {
-                const levelId = item.dataset.levelId;
-                const themeId = item.dataset.themeId;
-                const tagsIdsAttr = item.dataset.tagsIds || '';
-                const tagsIds = tagsIdsAttr.split(',').filter(id => id.trim() !== '');
-                const content = item.textContent.toLowerCase();
-                
-                // Logique de filtrage
-                let levelMatch = selectedLevelIds.length === 0 || selectedLevelIds.includes(levelId);
-                
-                // Vérifier si "Tous les thèmes" est sélectionné ou si le thème de l'exercice correspond
-                let themeMatch = selectedThemeIds.includes('all') || 
-                                 selectedThemeIds.length === 0 ||
-                                 selectedThemeIds.includes(themeId);
-                
-                // Gestion des tags avec cas spécial "no_tags"
-                let tagMatch = true;
-                if (selectedTagIds.length > 0) {
-                    // Cas des exercices sans tags
-                    if (tagsIds.length === 0) {
-                        tagMatch = selectedTagIds.includes('no_tags');
-                    } else {
-                        // Cas des exercices avec tags
-                        const nonNoTagsSelectedIds = selectedTagIds.filter(id => id !== 'no_tags');
-                        
-                        if (nonNoTagsSelectedIds.length > 0) {
-                            // Vérifier si au moins un tag de l'exercice correspond aux tags sélectionnés
-                            tagMatch = nonNoTagsSelectedIds.some(selectedId => tagsIds.includes(selectedId));
-                        } else if (selectedTagIds.includes('no_tags')) {
-                            // Si seul "no_tags" est sélectionné, ne pas afficher les exercices avec tags
-                            tagMatch = false;
-                        }
+            let tagMatch = true;
+            if (selectedTagIds.length > 0) {
+                if (tagsIds.length === 0) {
+                    tagMatch = selectedTagIds.includes('no_tags');
+                } else {
+                    const nonNoTagsSelectedIds = selectedTagIds.filter(id => id !== 'no_tags');
+                    if (nonNoTagsSelectedIds.length > 0) {
+                        tagMatch = nonNoTagsSelectedIds.some(selectedId => tagsIds.includes(selectedId));
+                    } else if (selectedTagIds.includes('no_tags')) {
+                        tagMatch = false;
                     }
                 }
-                
-                let searchMatch = !searchTerm || content.includes(searchTerm);
-                
-                return levelMatch && themeMatch && tagMatch && searchMatch;
-            });
-            
-            console.log(`Après filtrage: ${filteredItems.length} éléments correspondent aux critères`);
-
-            // Réinitialiser à la première page après filtrage
-            currentPage = 1;
-            
-            // Mettre à jour la pagination et afficher les éléments
-            updatePagination();
-            displayItemsForCurrentPage();
-            
-            // Afficher ou masquer le message "aucun résultat"
-            const noResultsDiv = document.getElementById('no-results');
-            if (noResultsDiv) {
-                noResultsDiv.classList.toggle('is-hidden', filteredItems.length > 0);
             }
             
-            console.log(`Exercices filtrés: ${filteredItems.length}/${allItems.length}`);
+            let searchMatch = !searchTerm || content.includes(searchTerm);
+            
+            return levelMatch && themeMatch && tagMatch && searchMatch;
+        });
+        
+        console.log(`Après filtrage: ${filteredItems.length}/${allItems.length} éléments correspondent aux critères`);
+        
+        // Liste des indices clés pour vérifier s'ils sont inclus
+        if (filteredItems.length > 9) {
+            console.log("Éléments aux positions critiques:");
+            [9, 10, 11, 12].forEach(idx => {
+                if (filteredItems[idx]) {
+                    console.log(`- Position ${idx}: ${filteredItems[idx].dataset.levelId}-${filteredItems[idx].dataset.themeId}`);
+                } else {
+                    console.log(`- Position ${idx}: Non défini`);
+                }
+            });
         }
         
-        // Fonction pour afficher uniquement les éléments de la page courante
+        // Réinitialiser à la première page après filtrage
+        currentPage = 1;
+        
+        // Mettre à jour la pagination et afficher les éléments
+        updatePagination();
+        displayItemsForCurrentPage();
+        
+        // Afficher ou masquer le message "aucun résultat"
+        const noResultsDiv = document.getElementById('no-results');
+        if (noResultsDiv) {
+            noResultsDiv.classList.toggle('is-hidden', filteredItems.length > 0);
+        }
+    }
+        
         function displayItemsForCurrentPage() {
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
-            
-            // Masquer tous les éléments d'abord
-            document.querySelectorAll('.exercise-item').forEach(item => {
-                item.style.display = 'none';
-            });
-            
-            // Afficher uniquement les éléments de la page courante
-            for (let i = startIndex; i < endIndex; i++) {
-                filteredItems[i].style.display = '';
-            }
-            
-            console.log(`Affichage des éléments de ${startIndex} à ${endIndex-1} sur ${filteredItems.length} éléments filtrés`);
-   
-
-            // Mettre à jour l'indicateur de page
-            document.getElementById('current-page-num').textContent = currentPage;
+        const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+        
+        // S'assurer que la page courante est valide
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
         }
         
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
+        
+        console.log(`Page ${currentPage}/${totalPages}: affichage des éléments ${startIndex} à ${endIndex-1} (sur ${filteredItems.length} éléments filtrés)`);
+        
+        // Masquer TOUS les éléments d'abord
+        document.querySelectorAll('.exercise-item').forEach(item => {
+            item.style.display = 'none';
+        });
+        
+        // Vérifier si nous avons des éléments à afficher
+        if (filteredItems.length === 0) {
+            console.log("Aucun exercice à afficher après filtrage");
+            return;
+        }
+        
+        // Diagnostiquer les problèmes potentiels avec les indices
+        console.log(`Détail des éléments à afficher:`, filteredItems.slice(startIndex, endIndex).map((el, idx) => {
+            return {
+                index: startIndex + idx,
+                exists: !!el,
+                id: el ? el.dataset.levelId + '-' + el.dataset.themeId : 'N/A'
+            };
+        }));
+        
+        // Afficher uniquement les éléments de la page courante
+        for (let i = startIndex; i < endIndex; i++) {
+            const element = filteredItems[i];
+            if (element) {
+                element.style.display = '';
+                console.log(`✓ Élément ${i} affiché`);
+            } else {
+                console.warn(`⚠️ Élément manquant à l'indice ${i}`);
+            }
+        }
+        
+        // Mettre à jour l'indicateur de page
+        document.getElementById('current-page-num').textContent = currentPage;
+        document.getElementById('total-pages-num').textContent = totalPages;
+    }
+        
+    function resetPaginationAndDisplay() {
+        // Réinitialiser tous les filtres
+        document.querySelectorAll('.level-filter, .tag-filter').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        document.querySelector('.theme-filter[value="all"]').checked = true;
+        document.getElementById('search-filter').value = '';
+        
+        // Forcer une nouvelle filtration complète
+        const allItems = document.querySelectorAll('.exercise-item');
+        filteredItems = Array.from(allItems);
+        
+        // Réinitialiser la pagination
+        currentPage = 1;
+        
+        // Mettre à jour l'affichage
+        updatePagination();
+        
+        // Forcer l'affichage de tous les éléments de la première page
+        document.querySelectorAll('.exercise-item').forEach((item, index) => {
+            const isOnFirstPage = index < itemsPerPage;
+            item.style.display = isOnFirstPage ? '' : 'none';
+        });
+        
+        console.log("Pagination et affichage réinitialisés");
+    }
+
         // Fonction pour mettre à jour la pagination
         function updatePagination() {
             const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
-            console.log(`Items filtrés: ${filteredItems.length}, Pages totales: ${totalPages}`);
-   
+            console.log(`Items filtrés: ${filteredItems.length}, Pages totales: ${totalPages}, Page courante: ${currentPage}`);
+            
+            // S'assurer que la page actuelle est valide
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+                console.log(`Page courante ajustée à ${currentPage}`);
+            }
             const paginationLinks = document.getElementById('pagination-links');
             const prevButton = document.getElementById('prev-page');
             const nextButton = document.getElementById('next-page');
@@ -634,7 +690,8 @@
             document.getElementById('pagination-links').appendChild(li);
         }
         
-        // Gérer les clics sur les boutons Précédent/Suivant
+
+        // Événements des boutons de pagination
         document.getElementById('prev-page').addEventListener('click', function() {
             if (currentPage > 1) {
                 currentPage--;
@@ -646,8 +703,11 @@
         
         document.getElementById('next-page').addEventListener('click', function() {
             const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+            console.log(`Click sur Suivant: Page courante=${currentPage}, Total pages=${totalPages}`);
+            
             if (currentPage < totalPages) {
                 currentPage++;
+                console.log(`Nouvelle page courante: ${currentPage}`);
                 updatePagination();
                 displayItemsForCurrentPage();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -694,19 +754,7 @@
         
         // Fonction pour réinitialiser les filtres
         document.getElementById('reset-filters').addEventListener('click', () => {
-            document.getElementById('search-filter').value = '';
-            document.querySelectorAll('.level-filter, .theme-filter, .tag-filter').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            // Cocher "Tous les thèmes" par défaut
-            document.querySelector('.theme-filter[value="all"]').checked = true;
-            
-            // Afficher à nouveau tous les groupes de thèmes et tags
-            document.querySelectorAll('.theme-level-group, .tag-level-group').forEach(group => {
-                group.style.display = '';
-            });
-            
-            filterExercises();
+           resetPaginationAndDisplay();
         });
         
         // Initialiser la pagination au chargement sans filtrage initial
@@ -728,5 +776,10 @@
             icon.classList.add('fa-chevron-right');
         }
     }
+
+    setTimeout(() => {
+        console.log("Vérification finale de l'état de la pagination...");
+        displayItemsForCurrentPage();
+    }, 500);
 </script>
 {% endblock %}

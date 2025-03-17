@@ -167,44 +167,44 @@ def delete_exercise():
 @app.route('/create_exercise', methods=['GET', 'POST'])
 def create_exercise():
     if request.method == 'POST':
-        # Récupérer level et theme en tant qu'objets
+        # Récupération des données du formulaire
         level_id = request.form.get('level_id')
         theme_id = request.form.get('theme_id')
-        
-        # Création d'un nouvel exercice avec les nouvelles relations
-        new_exercice = Exercice(
-            id=str(uuid.uuid4()),
-            level_id=level_id,
-            theme_id=theme_id,
-            content=request.form.get('content'),
-            latex_code=request.form.get('latex_code', ''),
-            correction=request.form.get('correction', ''),
-            latex_correction=request.form.get('latex_correction', '')
-        )
-        
-        # Traiter les tags
+        content = request.form.get('content')
+        latex_code = request.form.get('latex_code')
+        correction = request.form.get('correction')
+        latex_correction = request.form.get('latex_correction')
         tag_ids = request.form.getlist('tags')
         
+        # Créer le nouvel exercice
+        new_exercise = Exercice(
+            level_id=level_id,
+            theme_id=theme_id,
+            content=content,
+            latex_code=latex_code,
+            correction=correction,
+            latex_correction=latex_correction
+        )
+        
+        db.session.add(new_exercise)
+        db.session.commit()
+        
+        # Ajouter les tags à l'exercice
         for tag_id in tag_ids:
             tag = Tag.query.get(tag_id)
             if tag:
-                new_exercice.tags.append(tag)
+                new_exercise.tags.append(tag)
         
-        db.session.add(new_exercice)
         db.session.commit()
+        flash('Exercice créé avec succès!', 'success')
         return redirect(url_for('home'))
-    else:
-        # Récupérer tous les niveaux pour le formulaire
-        levels = Level.query.order_by(Level.name).all()
-        # Les thèmes seront chargés dynamiquement avec JavaScript en fonction du niveau sélectionné
-        # Récupérer tous les tags par niveau
-        levels_with_tags = {}
-        for level in levels:
-            levels_with_tags[level.id] = Tag.query.filter_by(level_id=level.id).all()
-            
-        return render_template('create_exercise.html', 
-                               levels=levels, 
-                               levels_with_tags=levels_with_tags)
+
+    # Pour la méthode GET, afficher le formulaire
+    levels = Level.query.order_by(Level.name).all()
+    themes = Theme.query.order_by(Theme.name).all()
+    all_tags = Tag.query.order_by(Tag.name).all()
+    
+    return render_template('create_exercise.html', levels=levels, themes=themes, all_tags=all_tags)
 
 @app.route('/manage_metadata', methods=['GET', 'POST'])
 def manage_metadata():
