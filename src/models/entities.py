@@ -72,7 +72,6 @@ class Exercice(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     level_id = db.Column(db.Integer, db.ForeignKey('levels.id', name='fk_exercice_level'), nullable=False)  # Maintenant non nullable
     theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_exercice_theme'), nullable=False)  # Maintenant non nullable
-    selected = db.Column(db.Boolean, default=False)
     content = db.Column(db.Text, nullable=False)
     latex_code = db.Column(db.Text, nullable=False)
     correction = db.Column(db.Text, nullable=False)

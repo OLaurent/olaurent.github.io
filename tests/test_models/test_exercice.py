@@ -32,7 +32,6 @@ def test_create_exercice(session):
     assert exercice.level_id == level.id
     assert exercice.theme_id == theme.id
     assert exercice.content == "<p>Test</p>"
-    assert not exercice.selected  # Par défaut, non sélectionné
     
     # Vérifier les relations
     assert exercice.level == level
@@ -58,26 +57,3 @@ def test_exercice_tags_relationship(session, sample_data):
     exercice.tags.remove(tag)
     session.commit()
     assert tag not in exercice.tags
-    
-def test_exercice_selection(session, sample_data):
-    """Test la sélection/désélection d'un exercice."""
-    exercice = sample_data['exercices'][0]
-    
-    # Par défaut, l'exercice ne devrait pas être sélectionné
-    assert not exercice.selected
-    
-    # Sélectionner l'exercice
-    exercice.selected = True
-    session.commit()
-    
-    # Vérifier que l'exercice est bien sélectionné
-    exercice_db = session.get(exercice.__class__, exercice.id)
-    assert exercice_db.selected
-    
-    # Désélectionner l'exercice
-    exercice.selected = False
-    session.commit()
-    
-    # Vérifier que l'exercice n'est plus sélectionné
-    exercice_db = session.get(exercice.__class__, exercice.id)
-    assert not exercice_db.selected

@@ -7,7 +7,7 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def home():  
     exercices = Exercice.query.all()
-    selected_exercises = [ex.id for ex in Exercice.query.filter_by(selected=True).all()]
+    selected_exercises = []
     levels = Level.query.order_by(Level.name).all()
     return render_template('index.html', exercices=exercices, selected_exercises=selected_exercises, levels=levels)
 
