@@ -33,15 +33,51 @@
             font-weight: bold;
         }
         
-        /* Styles pour Select2 avec Bulma */
+        /* Styles améliorés pour Select2 avec Bulma */
+        .select2-container {
+            width: 100% !important;
+        }
+        
         .select2-container--default .select2-selection--multiple {
             border-radius: 4px;
             border: 1px solid #dbdbdb;
+            min-height: 40px;
         }
         
         .select2-container--default.select2-container--focus .select2-selection--multiple {
             border-color: #3273dc;
             box-shadow: 0 0 0 0.125em rgba(50, 115, 220, 0.25);
+        }
+        
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #3273dc;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+        }
+        
+        .select2-container--default .select2-selection__choice__remove {
+            color: white;
+            margin-right: 5px;
+        }
+        
+        /* Badge pour niveaux différents */
+        .tag-different-level {
+            opacity: 0.6;
+            font-style: italic;
+        }
+        
+        .tag-different-level::after {
+            content: " (autre niveau)";
+            font-size: 0.8em;
+        }
+        
+        /* Espace entre les sections */
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
         }
     </style>
 </head>
@@ -54,106 +90,156 @@
         </div>
     </section>
 
+    <nav class="navbar is-primary">
+        <div class="container">
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/">
+                        <span class="icon"><i class="fas fa-home"></i></span>
+                        <span>Accueil</span>
+                    </a>
+                    <a class="navbar-item" href="{{ url_for('exercise.create') }}">
+                        <span class="icon"><i class="fas fa-plus-circle"></i></span>
+                        <span>Nouvel exercice</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <section class="section">
         <div class="container">
-            <form action="/edit_exercise" method="POST">
-                <div class="field">
-                    <label class="label">ID</label>
-                    <div class="control">
-                        <input class="input" type="text" name="id" value="{{ exercice.id }}" readonly>
-                    </div>
-                </div>
+            <form id="exercise-form" action="{{ url_for('exercise.edit', id=exercice.id) }}" method="POST">
+                <input type="hidden" name="id" value="{{ exercice.id }}">
 
-                <div class="field">
-                    <label class="label">Niveau</label>
-                    <div class="control">
-                        <div class="select is-fullwidth">
-                            <select id="level_id" name="level_id" required>
-                                <option value="">Sélectionnez un niveau</option>
-                                {% for level in levels %}
-                                    <option value="{{ level.id }}" {% if exercice.level_id == level.id %}selected{% endif %}>{{ level.name }}</option>
+                <!-- Section classification -->
+                <div class="form-section">
+                    <h2 class="subtitle has-text-weight-bold">Classification de l'exercice</h2>
+                    
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Niveau</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select id="level_id" name="level_id" required>
+                                            <option value="">Sélectionnez un niveau</option>
+                                            {% for level in levels %}
+                                                <option value="{{ level.id }}" {% if exercice.level_id == level.id %}selected{% endif %}>{{ level.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Thème</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select id="theme_id" name="theme_id" required>
+                                            <option value="">Sélectionnez d'abord un niveau</option>
+                                            {% for theme in themes %}
+                                                <option value="{{ theme.id }}" data-level-id="{{ theme.level_id }}" {% if exercice.theme_id == theme.id %}selected{% endif %}>{{ theme.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Tags</label>
+                        <div class="control">
+                            <select name="tags" id="tags" multiple="multiple" style="width: 100%;">
+                                {% for tag in all_tags %}
+                                    <option value="{{ tag.id }}" data-level-id="{{ tag.level_id }}" {% if tag.id in exercice_tag_ids %}selected{% endif %}>{{ tag.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <p class="help is-info">Sélectionnez un ou plusieurs tags pour cet exercice</p>
                     </div>
                 </div>
 
-                <div class="field">
-                    <label class="label">Thème</label>
-                    <div class="control">
-                        <div class="select is-fullwidth">
-                            <select id="theme_id" name="theme_id" required>
-                                <option value="">Sélectionnez d'abord un niveau</option>
-                                {% for theme in themes %}
-                                    <option value="{{ theme.id }}" data-level-id="{{ theme.level_id }}" {% if exercice.theme_id == theme.id %}selected{% endif %}>{{ theme.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="field">
-                    <label class="label">Tags</label>
-                    <div class="control">
-                        <select class="select2-tags" name="tags" id="tags" multiple="multiple" style="width: 100%;">
-                            {% for tag in all_tags %}
-                                <option value="{{ tag.id }}" data-level-id="{{ tag.level_id }}" {% if tag in exercice.tags %}selected{% endif %}>{{ tag.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <p class="help">Sélectionnez des tags existants pour le niveau choisi</p>
-                </div>
+                <!-- Section contenu de l'exercice -->
+                <div class="form-section">
+                    <h2 class="subtitle has-text-weight-bold">Contenu de l'exercice</h2>
 
-                <div class="field">
-                    <label class="label">Contenu</label>
-                    <div class="columns">
-                        <div class="column">
-                            <div class="control">
-                                <textarea class="textarea" name="content" id="content-textarea" rows="10">{{ exercice.content }}</textarea>
+                    <div class="field">
+                        <label class="label">Contenu HTML</label>
+                        <div class="columns">
+                            <div class="column">
+                                <div class="control">
+                                    <textarea class="textarea" name="content" id="content-textarea" rows="10" placeholder="<p>Entrez le contenu HTML de l'exercice...</p>">{{ exercice.content }}</textarea>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="notification is-light">
+                                    <p class="preview-title">Prévisualisation</p>
+                                    <div id="content-preview" class="preview-box"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="column">
-                            <p class="preview-title">Prévisualisation:</p>
-                            <div id="content-preview" class="preview-box"></div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Code LaTeX</label>
+                        <div class="control">
+                            <textarea class="textarea" name="latex_code" placeholder="Entrez le code LaTeX de l'exercice...">{{ exercice.latex_code }}</textarea>
                         </div>
+                        <p class="help">Ce code sera utilisé pour l'export LaTeX</p>
                     </div>
                 </div>
 
-                <div class="field">
-                    <label class="label">Code LaTeX</label>
-                    <div class="control">
-                        <textarea class="textarea" name="latex_code">{{ exercice.latex_code }}</textarea>
-                    </div>
-                </div>
+                <!-- Section correction -->
+                <div class="form-section">
+                    <h2 class="subtitle has-text-weight-bold">Correction de l'exercice</h2>
 
-                <div class="field">
-                    <label class="label">Correction</label>
-                    <div class="columns">
-                        <div class="column">
-                            <div class="control">
-                                <textarea class="textarea" name="correction" id="correction-textarea" rows="10">{{ exercice.correction }}</textarea>
+                    <div class="field">
+                        <label class="label">Correction HTML</label>
+                        <div class="columns">
+                            <div class="column">
+                                <div class="control">
+                                    <textarea class="textarea" name="correction" id="correction-textarea" rows="10" placeholder="<p>Entrez la correction HTML...</p>">{{ exercice.correction }}</textarea>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="notification is-light">
+                                    <p class="preview-title">Prévisualisation</p>
+                                    <div id="correction-preview" class="preview-box"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="column">
-                            <p class="preview-title">Prévisualisation:</p>
-                            <div id="correction-preview" class="preview-box"></div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Correction LaTeX</label>
+                        <div class="control">
+                            <textarea class="textarea" name="latex_correction" placeholder="Entrez la correction en LaTeX...">{{ exercice.latex_correction }}</textarea>
                         </div>
+                        <p class="help">Ce code sera utilisé pour l'export LaTeX</p>
                     </div>
                 </div>
 
-                <div class="field">
-                    <label class="label">Correction LaTeX</label>
+                <!-- Actions -->
+                <div class="field is-grouped is-grouped-centered">
                     <div class="control">
-                        <textarea class="textarea" name="latex_correction">{{ exercice.latex_correction }}</textarea>
+                        <button class="button is-primary is-medium" type="submit">
+                            <span class="icon">
+                                <i class="fas fa-save"></i>
+                            </span>
+                            <span>Enregistrer</span>
+                        </button>
                     </div>
-                </div>
-
-                <div class="field is-grouped">
                     <div class="control">
-                        <button class="button is-link" type="submit">Enregistrer</button>
-                    </div>
-                    <div class="control">
-                        <a class="button is-light" href="/">Annuler</a>
+                        <a class="button is-light is-medium" href="/">
+                            <span class="icon">
+                                <i class="fas fa-times"></i>
+                            </span>
+                            <span>Annuler</span>
+                        </a>
                     </div>
                 </div>
             </form>
@@ -162,177 +248,183 @@
 
     <script>
     $(document).ready(function() {
-        // Stocker une copie de tous les tags originaux pour pouvoir les restaurer
-        const allOriginalTags = $('#tags option').clone();
-        
-        // Stocker les valeurs initiales pour les restaurer si nécessaire
-        const initialThemeId = $('#theme_id').val();
+        // Stockage des données initiales
+        const exerciceTagIds = {{ exercice_tag_ids | tojson }};
         const initialLevelId = $('#level_id').val();
+        const initialThemeId = $('#theme_id').val();
         
-        // Configuration initiale de Select2 pour les tags avec options avancées
-        $('.select2-tags').select2({
-            placeholder: "Sélectionnez des tags...",
+        // ------------------------------------------------------------
+        // CONFIGURATION DE SELECT2 POUR LES TAGS
+        // ------------------------------------------------------------
+        $('#tags').select2({
+            placeholder: 'Sélectionnez des tags...',
             allowClear: true,
+            closeOnSelect: false,
             templateResult: formatTagOption,
             templateSelection: formatTagSelection
         });
         
-        // Fonction pour formater l'affichage des options de tags dans le dropdown
+        // Formatage des options dans le menu déroulant
         function formatTagOption(tag) {
-            if (!tag.id) {
-                return tag.text;
-            }
+            if (!tag.id) return tag.text;
             
             const $tag = $(tag.element);
-            const tagLevelId = $tag.data('level-id');
-            const currentLevelId = $('#level_id').val();
+            const tagLevelId = parseInt($tag.data('level-id'));
+            const currentLevelId = parseInt($('#level_id').val());
             
-            // Si le tag appartient au niveau actuel, l'afficher normalement
-            if (tagLevelId == currentLevelId) {
+            if (!currentLevelId || tagLevelId === currentLevelId) {
                 return $('<span>' + tag.text + '</span>');
-            } 
-            
-            // Sinon, le désactiver visuellement
-            return $('<span style="opacity: 0.6; text-decoration: line-through;">' + tag.text + ' (niveau différent)</span>');
+            } else {
+                return $('<span class="tag-different-level">' + tag.text + '</span>');
+            }
         }
         
-        // Fonction pour formater l'affichage des tags sélectionnés
+        // Formatage des tags sélectionnés
         function formatTagSelection(tag) {
-            return tag.text;
+            const $tag = $(tag.element);
+            const tagLevelId = parseInt($tag.data('level-id'));
+            const currentLevelId = parseInt($('#level_id').val());
+            
+            if (!currentLevelId || tagLevelId === currentLevelId) {
+                return tag.text;
+            } else {
+                return tag.text + ' (!)';
+            }
         }
-
-        // Fonction améliorée pour filtrer les thèmes en fonction du niveau sélectionné
+        
+        // ------------------------------------------------------------
+        // GESTION DES THÈMES
+        // ------------------------------------------------------------
         function updateThemeOptions() {
             const selectedLevelId = $('#level_id').val();
-            console.log('Niveau sélectionné:', selectedLevelId);
-            
-            // Masquer tous les thèmes d'abord
-            $('#theme_id option').hide();
-            $('#theme_id option[value=""]').text('Sélectionnez un thème').show();
-            
-            if (selectedLevelId) {
-                // Afficher uniquement les thèmes du niveau sélectionné
-                $(`#theme_id option[data-level-id="${selectedLevelId}"]`).show();
-                
-                // Si aucun thème n'est disponible pour ce niveau, afficher un message
-                if ($(`#theme_id option[data-level-id="${selectedLevelId}"]`).length === 0) {
-                    $('#theme_id option[value=""]').text('Aucun thème disponible pour ce niveau').show();
-                    $('#theme_id').val('');
-                }
-            } else {
-                $('#theme_id option[value=""]').text('Sélectionnez d\'abord un niveau').show();
-            }
-            
-            // Vérifier si le thème actuellement sélectionné est disponible pour le niveau choisi
             const currentThemeId = $('#theme_id').val();
             
-            if (currentThemeId && currentThemeId !== '' && !$(`#theme_id option[value="${currentThemeId}"]:visible`).length) {
-                console.log(`Le thème ${currentThemeId} n'est pas visible pour le niveau ${selectedLevelId}`);
-                $('#theme_id').val('');
-            }
-        }
-
-        // Fonction améliorée pour gérer les tags en fonction du niveau sélectionné
-        function updateTagOptions() {
-            const selectedLevelId = $('#level_id').val();
-            const exerciceTags = {{ exercice_tag_ids | tojson }} || [];
-            
-            // Détruire l'instance Select2 pour faire des modifications proprement
-            $('#tags').select2('destroy');
-            
-            // Vider le sélecteur de tags
-            $('#tags').empty();
-            
-            // Ajouter tous les tags mais avec des attributs de niveau
-            allOriginalTags.each(function() {
-                const $option = $(this).clone();
-                const tagLevelId = $option.data('level-id');
+            // Réinitialiser le select de thèmes
+            $('#theme_id option').each(function() {
+                const themeOption = $(this);
+                const themeLevelId = themeOption.data('level-id');
                 
-                // Ajouter l'attribut disabled pour les tags qui ne correspondent pas au niveau actuel
-                if (selectedLevelId && tagLevelId != selectedLevelId) {
-                    $option.prop('disabled', true);
+                // Masquer toutes les options sauf l'option vide
+                if (themeOption.val() === '') {
+                    themeOption.text('Sélectionnez un thème').show();
                 } else {
-                    $option.prop('disabled', false);
+                    // Montrer uniquement les thèmes du niveau sélectionné
+                    // OU le thème actuellement sélectionné (pour l'édition)
+                    if (themeLevelId == selectedLevelId || themeOption.val() == initialThemeId) {
+                        themeOption.show();
+                    } else {
+                        themeOption.hide();
+                    }
                 }
-                
-                // Conserver la sélection pour les tags de l'exercice
-                if (exerciceTags.includes(parseInt($option.val()))) {
-                    $option.prop('selected', true);
-                }
-                
-                $('#tags').append($option);
             });
             
-            // Réinitialiser Select2
-            $('#tags').select2({
-                placeholder: "Sélectionnez des tags...",
+            // Conserver la sélection actuelle si elle existe et est visible
+            // Sinon, essayer de revenir au thème initial
+            if (currentThemeId && $(`#theme_id option[value="${currentThemeId}"]:visible`).length) {
+                // Garder la sélection actuelle
+            } else if (initialThemeId && $(`#theme_id option[value="${initialThemeId}"]:visible`).length) {
+                $('#theme_id').val(initialThemeId);
+            } else {
+                // Si aucune option valide, réinitialiser
+                $('#theme_id').val('');
+            }
+            
+            // Afficher un message si aucun thème n'est disponible
+            if (!selectedLevelId) {
+                $('#theme_id option[value=""]').text("Sélectionnez d'abord un niveau");
+            } else if ($('#theme_id option[data-level-id="' + selectedLevelId + '"]:visible').length === 0) {
+                $('#theme_id option[value=""]').text("Aucun thème disponible pour ce niveau");
+            }
+        }
+        
+        // ------------------------------------------------------------
+        // GESTION DES TAGS
+        // ------------------------------------------------------------
+        function updateTagDisplay() {
+            const selectedLevelId = parseInt($('#level_id').val());
+            
+            // Actualiser la représentation visuelle des tags sans détruire Select2
+            $('#tags').select2('destroy').select2({
+                placeholder: 'Sélectionnez des tags...',
                 allowClear: true,
+                closeOnSelect: false,
                 templateResult: formatTagOption,
                 templateSelection: formatTagSelection
             });
         }
-
+        
         // Événement de changement de niveau
         $('#level_id').on('change', function() {
-            // Mettre à jour le thème
-            updateThemeOptions();
-            
-            // Mettre à jour les tags avec une petite temporisation pour éviter les conflits
-            setTimeout(updateTagOptions, 50);
-        });
-
-        // Initialisation spéciale pour conserver la sélection initiale
-        if (initialLevelId) {
-            $('#level_id').val(initialLevelId);
-            
-            // Afficher les thèmes du niveau initial
-            $(`#theme_id option`).hide();
-            $(`#theme_id option[value=""]`).show();
-            $(`#theme_id option[data-level-id="${initialLevelId}"]`).show();
-            
-            // Réappliquer la sélection de thème initiale
-            if (initialThemeId) {
-                $('#theme_id').val(initialThemeId);
-                console.log(`Sélection initiale: niveau=${initialLevelId}, thème=${initialThemeId}`);
+            // Conserver le thème actuel uniquement si le niveau n'a pas changé
+            // Sinon, réinitialiser pour filtrer correctement
+            if ($(this).val() != initialLevelId) {
+                $('#theme_id').val('');
             }
             
-            // Mettre à jour les tags
-            updateTagOptions();
-        } else {
-            // Comportement normal si pas de sélection initiale
             updateThemeOptions();
-            updateTagOptions();
+            updateTagDisplay();
+        });
+        
+        // ------------------------------------------------------------
+        // INITIALISATION DES PRÉVISUALISATIONS
+        // ------------------------------------------------------------
+        function setupPreview(inputId, previewId) {
+            const textarea = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            
+            if (!textarea || !preview) return;
+            
+            // Fonction de mise à jour de la prévisualisation
+            function updatePreview() {
+                preview.innerHTML = textarea.value;
+                if (window.MathJax) {
+                    MathJax.typesetPromise([preview]).catch(function(err) {
+                        console.error('Erreur MathJax:', err);
+                    });
+                }
+            }
+            
+            // Événements de mise à jour
+            textarea.addEventListener('input', updatePreview);
+            textarea.addEventListener('change', updatePreview);
+            
+            // Initialiser la prévisualisation
+            updatePreview();
         }
         
-        // Validation avant soumission du formulaire
-        $('form').on('submit', function(e) {
-            const selectedLevelId = $('#level_id').val();
+        // Initialiser les prévisualisations après le chargement complet
+        setTimeout(function() {
+            setupPreview('content-textarea', 'content-preview');
+            setupPreview('correction-textarea', 'correction-preview');
+        }, 300);
+        
+        // ------------------------------------------------------------
+        // VALIDATION DU FORMULAIRE
+        // ------------------------------------------------------------
+        $('#exercise-form').on('submit', function(e) {
+            const selectedLevelId = parseInt($('#level_id').val());
             const selectedThemeId = $('#theme_id').val();
-            const selectedTags = $('#tags').val() || [];
             
-            if (!selectedLevelId) {
+            // Validation du niveau et du thème
+            if (!selectedLevelId || !selectedThemeId) {
                 e.preventDefault();
-                alert("Veuillez sélectionner un niveau.");
+                alert("Veuillez sélectionner un niveau et un thème pour cet exercice.");
                 return false;
             }
             
-            if (!selectedThemeId) {
-                e.preventDefault();
-                alert("Veuillez sélectionner un thème.");
-                return false;
-            }
-            
-            // Vérifier si des tags de niveaux différents sont sélectionnés
-            let invalidTagsSelected = false;
+            // Vérifier les tags de niveaux différents
+            let hasDifferentLevelTags = false;
             $('#tags option:selected').each(function() {
-                if ($(this).data('level-id') != selectedLevelId) {
-                    invalidTagsSelected = true;
-                    return false; // sortir de la boucle
+                const tagLevelId = parseInt($(this).data('level-id'));
+                if (tagLevelId !== selectedLevelId) {
+                    hasDifferentLevelTags = true;
+                    return false;
                 }
             });
             
-            if (invalidTagsSelected) {
-                if (!confirm("Attention: certains tags sélectionnés n'appartiennent pas au niveau choisi. Voulez-vous continuer?")) {
+            // Avertissement pour les tags de niveaux différents
+            if (hasDifferentLevelTags) {
+                if (!confirm("Attention : certains tags sélectionnés appartiennent à un niveau différent. Voulez-vous continuer ?")) {
                     e.preventDefault();
                     return false;
                 }
@@ -340,56 +432,24 @@
             
             return true;
         });
-    });
-    
-    // Le reste du code reste inchangé
-    document.addEventListener('DOMContentLoaded', function() {
-        // Fonction pour mettre à jour la prévisualisation (inchangée)
-        function updatePreview(inputId, previewId) {
-            const textarea = document.getElementById(inputId);
-            const preview = document.getElementById(previewId);
-            
-            if (!textarea || !preview) {
-                console.error(`Éléments non trouvés: ${inputId} ou ${previewId}`);
-                return;
-            }
-            
-            // Affichage de débogage
-            console.log(`Initialisation de ${inputId} avec valeur:`, textarea.value);
-            
-            // Met à jour la prévisualisation lors de la saisie
-            textarea.addEventListener('input', function() {
-                console.log(`Mise à jour de ${previewId} avec:`, this.value);
-                preview.innerHTML = this.value;
-                
-                // Re-render MathJax content
-                if (window.MathJax) {
-                    MathJax.typesetPromise([preview]).catch(function(err) {
-                        console.log('MathJax error:', err);
-                    });
-                } else {
-                    console.warn('MathJax n\'est pas disponible');
-                }
-            });
-            
-            // Initialiser la prévisualisation au chargement
-            setTimeout(function() {
-                preview.innerHTML = textarea.value;
-                if (window.MathJax) {
-                    MathJax.typesetPromise([preview]).catch(function(err) {
-                        console.log('MathJax error:', err);
-                    });
-                }
-            }, 500);
+        
+        // ------------------------------------------------------------
+        // INITIALISATION
+        // ------------------------------------------------------------
+        // Mettre à jour les thèmes au chargement initial en préservant le thème existant
+        updateThemeOptions();
+        
+        // S'assurer que le thème initial est sélectionné
+        if (initialThemeId) {
+            $('#theme_id').val(initialThemeId);
         }
         
         // Initialiser les prévisualisations
         setTimeout(function() {
-            console.log('Initialisation des prévisualisations...');
-            updatePreview('content-textarea', 'content-preview');
-            updatePreview('correction-textarea', 'correction-preview');
+            setupPreview('content-textarea', 'content-preview');
+            setupPreview('correction-textarea', 'correction-preview');
         }, 300);
     });
-</script>
+    </script>
 </body>
 </html>
