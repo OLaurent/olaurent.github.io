@@ -7,7 +7,6 @@ exercise_bp = Blueprint('exercise', __name__, url_prefix='/exercise')
 @exercise_bp.route('/create', methods=['GET', 'POST'])
 def create():
     if request.method == 'POST':
-        # Récupération des données du formulaire
         level_id = request.form.get('level_id')
         theme_id = request.form.get('theme_id')
         content = request.form.get('content')
@@ -16,8 +15,7 @@ def create():
         latex_correction = request.form.get('latex_correction')
         tag_ids = request.form.getlist('tags')
         
-        # Créer le nouvel exercice
-        new_exercise = Exercice(
+        exercice = Exercice(
             level_id=level_id,
             theme_id=theme_id,
             content=content,
@@ -26,20 +24,16 @@ def create():
             latex_correction=latex_correction
         )
         
-        db.session.add(new_exercise)
-        db.session.commit()
-        
-        # Ajouter les tags à l'exercice
         for tag_id in tag_ids:
-            tag = Tag.query.get(tag_id)
+            tag = db.session.get(Tag, tag_id)
             if tag:
-                new_exercise.tags.append(tag)
+                exercice.tags.append(tag)
         
+        db.session.add(exercice)
         db.session.commit()
         flash('Exercice créé avec succès!', 'success')
         return redirect(url_for('main.home'))
 
-    # Pour la méthode GET, afficher le formulaire
     levels = Level.query.order_by(Level.name).all()
     themes = Theme.query.order_by(Theme.name).all()
     all_tags = Tag.query.order_by(Tag.name).all()
@@ -49,7 +43,6 @@ def create():
 @exercise_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
     if request.method == 'POST':
-        # Récupération des données du formulaire
         exercice_id = request.form.get('id')
         level_id = request.form.get('level_id')
         theme_id = request.form.get('theme_id')
@@ -59,8 +52,7 @@ def edit(id):
         latex_correction = request.form.get('latex_correction')
         tag_ids = request.form.getlist('tags')
         
-        # Mise à jour de l'exercice
-        exercice = Exercice.query.get(exercice_id)
+        exercice = db.session.get(Exercice, exercice_id)
         if exercice:
             exercice.level_id = level_id
             exercice.theme_id = theme_id
@@ -69,19 +61,19 @@ def edit(id):
             exercice.correction = correction
             exercice.latex_correction = latex_correction
             
-            # Mise à jour des tags
             exercice.tags.clear()
             for tag_id in tag_ids:
-                tag = Tag.query.get(tag_id)
+                tag = db.session.get(Tag, tag_id)
                 if tag:
                     exercice.tags.append(tag)
             
             db.session.commit()
+            flash('Exercice modifié avec succès!', 'success')
             return redirect(url_for('main.home'))
     else:
-        exercice_id = request.args.get('id')
-        exercice = Exercice.query.get(exercice_id)
+        exercice = db.session.get(Exercice, id)
         if not exercice:
+            flash("Exercice non trouvé.", "danger")
             return redirect(url_for('main.home'))
         
         levels = Level.query.all()
@@ -96,16 +88,16 @@ def edit(id):
                                all_tags=all_tags,
                                exercice_tag_ids=exercice_tag_ids)
 
-@exercise_bp.route('/delete_exercise', methods=['POST'])
-def delete_exercise():
+@exercise_bp.route('/delete', methods=['POST'])
+def delete():
     exercice_id = request.form.get('id')
-    exercice = Exercice.query.get(exercice_id)
+    exercice = db.session.get(Exercice, exercice_id)
     if exercice:
         db.session.delete(exercice)
         db.session.commit()
-        print(f'Exercice {exercice_id} supprimé.')
+        flash('Exercice supprimé avec succès', 'success')
     else:
-        print(f'Exercice {exercice_id} non trouvé.')
+        flash('Exercice non trouvé', 'danger')
     return redirect(url_for('main.home'))
 
 

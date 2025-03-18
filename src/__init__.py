@@ -2,12 +2,17 @@ from flask import Flask
 from .extensions import db, migrate
 from .config import Config
 
-def create_app(config_class=Config):
+def create_app(test_config=None):
     """
     Factory function qui crée et configure l'application Flask.
     """
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    
+    # Utiliser la configuration de test si elle est fournie, sinon utiliser Config
+    if test_config:
+        app.config.from_mapping(test_config)
+    else:
+        app.config.from_object(Config)
     
     # Initialiser les extensions
     db.init_app(app)

@@ -144,6 +144,27 @@ Pour convertir du LaTeX en SVG, vous pouvez utiliser le workflow suivant :
 
 5. Ajouter `fill:#3e8ed0;` aux données de texte dans le fichier SVG.
 
+## Tests unitaires
+
+Pour exécuter les tests unitaires :
+
+```sh
+# Installer pytest si nécessaire
+pip install pytest pytest-cov
+
+# Exécuter tous les tests
+pytest
+
+# Exécuter avec couverture de code
+pytest --cov=src
+
+# Exécuter un fichier de test spécifique
+pytest tests/test_models/test_exercice.py
+
+# Mode verbeux avec détails des tests
+pytest -v
+```
+
 ## Développement et Contribution
 
 Pour contribuer au projet :
