@@ -49,6 +49,11 @@ jobs:
             --minify \
             --baseURL "${{ steps.pages.outputs.base_url }}/"
 
+      - name: Debug artifacts before upload
+        run: |
+          echo "Listing files in workspace before artifact upload:"
+          ls -lR ${{ github.workspace }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
