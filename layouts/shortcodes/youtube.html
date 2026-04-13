@@ -1,0 +1,15 @@
+{{/* Shortcode : {{< youtube "videoID" "Titre optionnel" >}} */}}
+{{ $id := .Get 0 }}
+{{ $titre := .Get 1 | default "Visionner la vidéo" }}
+<div class="video-card video-shortcode">
+  <a href="https://www.youtube.com/watch?v={{ $id }}"
+     class="video-thumb glightbox"
+     data-type="video"
+     data-source="youtube"
+     aria-label="{{ $titre }}">
+    <img src="https://img.youtube.com/vi/{{ $id }}/mqdefault.jpg"
+         alt="{{ $titre }}" loading="lazy" width="320" height="180">
+    <div class="video-play-btn" aria-hidden="true">▶</div>
+  </a>
+  <p class="video-label">{{ $titre }}</p>
+</div>

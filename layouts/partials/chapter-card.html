@@ -1,0 +1,43 @@
+<!-- partial/chapter-card.html — appelé avec . = page chapitre -->
+{{ $couleur := "#D4AF37" }}
+{{ if eq .Section "seconde" }}{{ $couleur = "#00D4FF" }}
+{{ else if eq .Section "premiere-specialite" }}{{ $couleur = "#8A2BE2" }}
+{{ else if eq .Section "terminale-specialite" }}{{ $couleur = "#4B0082" }}
+{{ else if eq .Section "maths-expertes" }}{{ $couleur = "#D4AF37" }}
+{{ end }}
+
+<article class="chapter-card" style="--couleur-niveau: {{ $couleur }}"
+         data-en-cours="{{ .Params.en_cours }}">
+  <div class="chapter-card-header">
+    <span class="chapter-numero">Ch.{{ .Params.numero }}</span>
+    <h3 class="chapter-titre">
+      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+    </h3>
+    {{ if .Params.en_cours }}<span class="badge-encours">En cours</span>{{ end }}
+  </div>
+
+  {{ with .Description }}<p class="chapter-desc">{{ . }}</p>{{ end }}
+
+  <div class="chapter-actions">
+    {{ if .Params.documents }}
+    <a href="{{ .RelPermalink }}#ressources" class="btn-ressource btn-cours">
+      📄 Cours &amp; Exercices
+    </a>
+    {{ end }}
+    {{ if .Params.videos }}
+    <a href="{{ .RelPermalink }}#videos" class="btn-ressource btn-video">
+      🎥 Vidéos
+    </a>
+    {{ end }}
+    {{ if .Params.mathalea }}
+    <a href="{{ .RelPermalink }}#mathalea" class="btn-ressource btn-mathalea">
+      🧮 MathAlea
+    </a>
+    {{ end }}
+    {{ if .Params.evaluations }}
+    <a href="{{ .RelPermalink }}#evaluations" class="btn-ressource btn-eval">
+      ✍️ Évaluations
+    </a>
+    {{ end }}
+  </div>
+</article>

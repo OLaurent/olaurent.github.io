@@ -1,0 +1,22 @@
+{{ with hugo.Data.actualites.items }}
+<div class="ticker-wrap" aria-label="Actualités">
+  <div class="ticker-label">ACTU</div>
+  <div class="ticker-track" role="marquee">
+    <div class="ticker-content">
+      {{ range . }}
+      <span class="ticker-item {{ with .niveau }}ticker-{{ . }}{{ end }}">
+        {{ .texte }}
+        {{ with .date }}<time datetime="{{ . }}">&nbsp;({{ dateFormat "02/01" . }})</time>{{ end }}
+      </span>
+      {{ end }}
+      {{/* Dupliquer pour boucle continue */}}
+      {{ range . }}
+      <span class="ticker-item {{ with .niveau }}ticker-{{ . }}{{ end }}" aria-hidden="true">
+        {{ .texte }}
+        {{ with .date }}<time datetime="{{ . }}">&nbsp;({{ dateFormat "02/01" . }})</time>{{ end }}
+      </span>
+      {{ end }}
+    </div>
+  </div>
+</div>
+{{ end }}

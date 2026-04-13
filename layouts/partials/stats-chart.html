@@ -1,0 +1,39 @@
+<!-- partial/stats-chart.html — appelé avec . = map évaluation -->
+{{ $id := .label | urlize }}
+<div class="stats-block" id="stats-{{ $id }}">
+  <h4 class="stats-titre">📊 Statistiques — {{ .label }}</h4>
+  <div class="stats-grid">
+    <div class="stats-chart-wrap">
+      <canvas id="chart-{{ $id }}"
+              data-notes="{{ .notes | jsonify }}"
+              data-feedback="{{ .feedback }}"
+              aria-label="Histogramme de répartition des notes"></canvas>
+    </div>
+    <div class="stats-indicators" id="indicators-{{ $id }}">
+      {{/* Indicateurs calculés par stats.js */}}
+      <div class="stat-item" data-key="moyenne">
+        <span class="stat-label">Moyenne</span>
+        <span class="stat-value" id="stat-moyenne-{{ $id }}">—</span>
+      </div>
+      <div class="stat-item" data-key="mediane">
+        <span class="stat-label">Médiane</span>
+        <span class="stat-value" id="stat-mediane-{{ $id }}">—</span>
+      </div>
+      <div class="stat-item" data-key="ecarttype">
+        <span class="stat-label">Écart-type</span>
+        <span class="stat-value" id="stat-ecarttype-{{ $id }}">—</span>
+      </div>
+      <div class="stat-item" data-key="max">
+        <span class="stat-label">Max</span>
+        <span class="stat-value" id="stat-max-{{ $id }}">—</span>
+      </div>
+      <div class="stat-item" data-key="effectif">
+        <span class="stat-label">Effectif</span>
+        <span class="stat-value" id="stat-effectif-{{ $id }}">—</span>
+      </div>
+    </div>
+  </div>
+  {{ with .feedback }}
+  <p class="stats-feedback">{{ . }}</p>
+  {{ end }}
+</div>

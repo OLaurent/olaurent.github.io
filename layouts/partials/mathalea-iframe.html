@@ -1,0 +1,21 @@
+<!-- partial/mathalea-iframe.html — appelé avec . = chaîne de paramètres ex: "3F12&v=eleve" -->
+{{ $params := . }}
+<div class="mathalea-embed" data-params="{{ $params }}">
+  <iframe
+    src="https://coopmaths.fr/alea/?ex={{ $params }}"
+    class="mathalea-iframe"
+    title="Exercices MathAlea"
+    loading="lazy"
+    sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+    allowfullscreen>
+    <p>Votre navigateur ne supporte pas les iframes.
+       <a href="https://coopmaths.fr/alea/?ex={{ $params }}" target="_blank" rel="noopener">
+         Ouvrir les exercices sur coopmaths.fr →
+       </a>
+    </p>
+  </iframe>
+  <a href="https://coopmaths.fr/alea/?ex={{ $params }}" class="mathalea-external"
+     target="_blank" rel="noopener">
+    Ouvrir dans MathAlea ↗
+  </a>
+</div>

@@ -18,14 +18,13 @@ nosetests.xml
 coverage.xml
 *.cover
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# Hugo
+public/
+resources/_gen/
+.hugo_build.lock
+
+# Python env
+
 
 # Editor directories and files
 .idea

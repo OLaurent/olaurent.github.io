@@ -1,0 +1,215 @@
+{{ define "main" }}
+<div class="tools-page">
+  <header class="tools-header">
+    <h1 class="tools-titre">🔬 The Lab</h1>
+    <p class="tools-desc">Console Python, émulateurs calculatrice, outils en ligne — le laboratoire numérique d'OXL Digital.</p>
+  </header>
+
+  <div class="tools-grid">
+
+    {{/* ─── CONSOLE PYTHON ─────────────────────────────── */}}
+    <div class="tool-card" style="grid-column: 1 / -1">
+      <div class="tool-card-header">
+        <span class="tool-icon">🐍</span>
+        <span class="tool-titre">Console Python (Pyodide)</span>
+      </div>
+      <div class="tool-card-body">
+        <p class="tool-desc">Interpréteur Python complet dans votre navigateur (WebAssembly). Modules <code>math</code>, <code>random</code>, <code>statistics</code> disponibles.</p>
+        <p class="console-status">
+          <span id="pyodide-status" class="status-loading">⏳ Chargement de Python...</span>
+        </p>
+        <div class="python-console" id="python-console">
+          <div class="console-output" id="console-output" role="log" aria-live="polite">Bienvenue dans la console OXL MATH 🧮
+Python via Pyodide — tapez du code et appuyez sur Entrée.
+---
+</div>
+          <div class="console-input-row">
+            <span class="console-prompt">&gt;&gt;&gt;</span>
+            <input type="text" id="console-input"
+                   placeholder="print('Bonjour OXL MATH')"
+                   autocomplete="off" autocorrect="off" spellcheck="false"
+                   aria-label="Saisir du code Python" disabled>
+            <button class="console-run-btn" id="console-run" disabled aria-label="Exécuter">⏎ Run</button>
+          </div>
+        </div>
+        <button class="btn-ressource btn-stats" id="console-clear" style="margin-top:8px">
+          🗑️ Effacer
+        </button>
+        <div class="tools-links" style="margin-top:12px">
+          <a href="https://basthon.fr" class="tool-link" target="_blank" rel="noopener">🐍 Basthon</a>
+          <a href="https://capytale.fr" class="tool-link" target="_blank" rel="noopener">📓 Capytale</a>
+          <a href="https://colab.research.google.com" class="tool-link" target="_blank" rel="noopener">📊 Google Colab</a>
+        </div>
+      </div>
+    </div>
+
+    {{/* ─── NUMWORKS ────────────────────────────────────── */}}
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-icon">🔢</span>
+        <span class="tool-titre">Calculatrice NumWorks</span>
+      </div>
+      <div class="tool-card-body">
+        <p class="tool-desc">Émulateur de la calculatrice NumWorks directement dans le navigateur.</p>
+        <iframe
+          src="https://www.numworks.com/simulator/"
+          height="560"
+          title="Simulateur NumWorks"
+          sandbox="allow-same-origin allow-scripts allow-popups"
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+
+    {{/* ─── GEOGEBRA ────────────────────────────────────── */}}
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-icon">📐</span>
+        <span class="tool-titre">GeoGebra</span>
+      </div>
+      <div class="tool-card-body">
+        <p class="tool-desc">Calculatrice graphique et géométrie dynamique.</p>
+        <iframe
+          src="https://www.geogebra.org/calculator?embed"
+          height="560"
+          title="GeoGebra Calculatrice"
+          allowfullscreen
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+          loading="lazy">
+        </iframe>
+        <div class="tools-links" style="margin-top:12px">
+          <a href="https://www.geogebra.org/3d" class="tool-link" target="_blank" rel="noopener">📦 3D</a>
+          <a href="https://www.geogebra.org/geometry" class="tool-link" target="_blank" rel="noopener">📐 Géométrie</a>
+        </div>
+      </div>
+    </div>
+
+    {{/* ─── LIENS OUTILS ────────────────────────────────── */}}
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-icon">🔗</span>
+        <span class="tool-titre">Liens Utiles</span>
+      </div>
+      <div class="tool-card-body">
+        <p class="tool-desc">Ressources en ligne recommandées pour les mathématiques.</p>
+        <div class="tools-links" style="flex-direction:column; gap:8px;">
+          <a href="https://www.wolframalpha.com" class="tool-link" target="_blank" rel="noopener">🧠 WolframAlpha — Calcul symbolique</a>
+          <a href="https://www.desmos.com/calculator" class="tool-link" target="_blank" rel="noopener">📈 Desmos — Tracé de courbes</a>
+          <a href="https://coopmaths.fr/alea/" class="tool-link" target="_blank" rel="noopener">🧮 MathAlea — Exercices aléatoires</a>
+          <a href="https://www.mathway.com/fr" class="tool-link" target="_blank" rel="noopener">✏️ Mathway — Résolution guidée</a>
+          <a href="https://fr.khanacademy.org/math" class="tool-link" target="_blank" rel="noopener">🎓 Khan Academy — Cours vidéo</a>
+          <a href="https://www.symbolab.com" class="tool-link" target="_blank" rel="noopener">∑ Symbolab — Calcul formel</a>
+        </div>
+      </div>
+    </div>
+
+    {{/* ─── GHOST SOROBAN (Placeholder) ────────────────── */}}
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-icon">🎋</span>
+        <span class="tool-titre">Ghost Soroban — OXL Digital</span>
+      </div>
+      <div class="tool-card-body">
+        <p class="tool-desc">Application iOS de calcul mental basée sur le boulier japonais. En cours de développement par OXL Digital.</p>
+        <div style="text-align:center; padding: 2rem 1rem;">
+          <div style="font-size:3rem; margin-bottom:1rem;">🎋</div>
+          <p style="color: var(--text-muted, #606080); font-size:0.85rem; font-style:italic;">Bientôt disponible sur l'App Store</p>
+          <p style="color: #D4AF37; font-size:0.75rem; letter-spacing:0.1em; margin-top:0.5rem;">OXL DIGITAL</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{/* PYODIDE — Chargement asynchrone */}}
+<script>
+(function () {
+  'use strict';
+
+  const statusEl  = document.getElementById('pyodide-status');
+  const output    = document.getElementById('console-output');
+  const input     = document.getElementById('console-input');
+  const runBtn    = document.getElementById('console-run');
+  const clearBtn  = document.getElementById('console-clear');
+
+  let pyodide = null;
+  let history = [];
+  let histIdx = -1;
+
+  function appendOutput(text, type) {
+    const line = document.createElement('div');
+    line.className = type || '';
+    line.textContent = text;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+  }
+
+  function runCode(code) {
+    if (!pyodide || !code.trim()) return;
+    appendOutput('>>> ' + code);
+    try {
+      const result = pyodide.runPython(code);
+      if (result !== undefined && result !== null) {
+        appendOutput(String(result), 'output');
+      }
+    } catch (err) {
+      appendOutput(err.message || String(err), 'error' );
+    }
+  }
+
+  // Charger Pyodide depuis CDN
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js';
+  script.onload = async function () {
+    try {
+      statusEl.textContent = '⏳ Initialisation de l\'interpréteur…';
+      statusEl.className = 'status-loading';
+      pyodide = await loadPyodide({
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.5/full/',
+      });
+
+      // Rediriger stdout/stderr
+      pyodide.setStdout({ batched: (msg) => appendOutput(msg, 'output') });
+      pyodide.setStderr({ batched: (msg) => appendOutput(msg, 'error') });
+
+      statusEl.textContent = '✅ Python prêt';
+      statusEl.className = 'status-ready';
+      input.disabled = false;
+      runBtn.disabled = false;
+      input.focus();
+    } catch (e) {
+      statusEl.textContent = '❌ Erreur de chargement : ' + e.message;
+      statusEl.className = 'status-error';
+    }
+  };
+  document.head.appendChild(script);
+
+  runBtn.addEventListener('click', function () {
+    const code = input.value;
+    if (!code.trim()) return;
+    history.unshift(code);
+    histIdx = -1;
+    input.value = '';
+    runCode(code);
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      runBtn.click();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histIdx < history.length - 1) { histIdx++; input.value = history[histIdx]; }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histIdx > 0) { histIdx--; input.value = history[histIdx]; }
+      else { histIdx = -1; input.value = ''; }
+    }
+  });
+
+  clearBtn.addEventListener('click', function () {
+    output.textContent = '';
+  });
+})();
+</script>
+{{ end }}

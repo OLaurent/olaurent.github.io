@@ -1,0 +1,46 @@
+// ═══════════════════════════════════════════════════════
+// OXL MATH — Reset & Base
+// ═══════════════════════════════════════════════════════
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --couleur-niveau: #D4AF37;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font-sans;
+  font-weight: 400;
+  color: $text-primary;
+  background: radial-gradient(ellipse at center, $bg-center 0%, $bg-edge 100%);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+  &:focus-visible {
+    outline: 2px solid $or-debut;
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+#main-content {
+  min-height: calc(100vh - 140px);
+}

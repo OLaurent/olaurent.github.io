@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  {{- partial "head.html" . -}}
+</head>
+<body class="{{ with .Section }}section-{{ . }}{{ end }}{{ if .IsHome }} page-home{{ end }}">
+
+  {{- partial "focus-toggle.html" . -}}
+  {{- partial "header.html" . -}}
+
+  <main id="main-content">
+    {{- block "main" . }}{{- end }}
+  </main>
+
+  {{- partial "footer.html" . -}}
+
+  {{/* GLightbox */}}
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  <script>
+    const lightbox = GLightbox({ touchNavigation: true, loop: false, autoplayVideos: true });
+  </script>
+
+  {{/* Focus mode & Stats JS */}}
+  {{ $focusJs := resources.Get "js/focus.js" | minify }}
+  <script src="{{ $focusJs.RelPermalink }}"></script>
+
+  {{ if .Params.evaluations }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    {{ $statsJs := resources.Get "js/stats.js" | minify }}
+    <script src="{{ $statsJs.RelPermalink }}"></script>
+  {{ end }}
+
+</body>
+</html>

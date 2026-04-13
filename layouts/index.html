@@ -1,0 +1,108 @@
+{{ define "main" }}
+
+{{/* TICKER */}}
+{{- partial "ticker.html" . -}}
+
+{{/* HERO */}}
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Hub Ressources Mathématiques</p>
+    <h1 class="hero-title">
+      <span class="hero-oxl">OXL</span><span class="hero-math">MATH</span>
+    </h1>
+    <p class="hero-subtitle">Cours · Exercices · Capsules · Évaluations</p>
+  </div>
+</section>
+
+{{/* PORTAILS NIVEAUX */}}
+<section class="portails" id="niveaux" aria-labelledby="niveaux-titre">
+  <h2 class="sr-only" id="niveaux-titre">Niveaux disponibles</h2>
+
+  <div class="portails-grid">
+
+    <a href="/seconde/" class="card-niveau card-seconde" style="--couleur-niveau:#00D4FF">
+      <div class="card-niveau-inner">
+        <div class="card-niveau-icon">∑</div>
+        <h3 class="card-niveau-titre">2nde</h3>
+        <p class="card-niveau-slogan">L'entrée au lycée.</p>
+        <span class="card-niveau-cta">Explorer →</span>
+      </div>
+    </a>
+
+    <a href="/premiere-specialite/" class="card-niveau card-premiere" style="--couleur-niveau:#8A2BE2">
+      <div class="card-niveau-inner">
+        <div class="card-niveau-icon">∫</div>
+        <h3 class="card-niveau-titre">1ère Spé</h3>
+        <p class="card-niveau-slogan">L'analyse et la rigueur.</p>
+        <span class="card-niveau-cta">Explorer →</span>
+      </div>
+    </a>
+
+    <a href="/terminale-specialite/" class="card-niveau card-terminale" style="--couleur-niveau:#4B0082">
+      <div class="card-niveau-inner">
+        <div class="card-niveau-icon">∂</div>
+        <h3 class="card-niveau-titre">Term Spé</h3>
+        <p class="card-niveau-slogan">Vers le baccalauréat.</p>
+        <span class="card-niveau-cta">Explorer →</span>
+      </div>
+    </a>
+
+    <a href="/maths-expertes/" class="card-niveau card-expertes" style="--couleur-niveau:#D4AF37">
+      <div class="card-niveau-inner">
+        <div class="card-niveau-icon">ℝ</div>
+        <h3 class="card-niveau-titre">Maths Exp</h3>
+        <p class="card-niveau-slogan">L'abstraction pure.</p>
+        <span class="card-niveau-cta">Explorer →</span>
+      </div>
+    </a>
+
+    <div class="card-niveau card-snt card-soon" style="--couleur-niveau:#00FF88" aria-disabled="true">
+      <div class="card-niveau-inner">
+        <div class="card-niveau-icon">💻</div>
+        <h3 class="card-niveau-titre">SNT</h3>
+        <p class="card-niveau-slogan">Sciences Numériques.</p>
+        <span class="card-niveau-cta badge-bientot">Bientôt — 2026–27</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{{/* THE LAB */}}
+<section class="lab-section" id="the-lab" aria-labelledby="lab-titre">
+  <div class="lab-inner">
+    <div class="lab-text">
+      <p class="lab-eyebrow">OXL DIGITAL</p>
+      <h2 class="lab-titre" id="lab-titre">The Lab</h2>
+      <p class="lab-desc">
+        Laboratoire numérique d'<strong>OXL Digital</strong>. Console Python, 
+        émulateurs calculatrice, ressources interactives — tout ce qu'il faut 
+        pour explorer les mathématiques autrement.
+      </p>
+      <div class="lab-actions">
+        <a href="/tools/" class="btn-gold">Accéder au Lab →</a>
+        <span class="lab-coming">
+          Ghost Soroban — <em>App iOS à venir</em>
+        </span>
+      </div>
+    </div>
+    <div class="lab-visual" aria-hidden="true">
+      <div class="lab-terminal">
+        <div class="lab-terminal-bar">
+          <span></span><span></span><span></span>
+          <span class="lab-terminal-title">oxl_lab.py</span>
+        </div>
+        <div class="lab-terminal-body">
+          <code>>>> import math</code>
+          <code>>>> math.pi</code>
+          <code class="output">3.141592653589793</code>
+          <code>>>> print("OXL MATH")</code>
+          <code class="output">OXL MATH</code>
+          <code class="cursor">▊</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{ end }}

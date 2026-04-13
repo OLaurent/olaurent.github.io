@@ -1,0 +1,18 @@
+{{/* Shortcode : {{< mathalea "3F12,nb=5&v=eleve" >}} */}}
+{{ $params := .Get 0 | default "" }}
+{{ $label := .Get 1 | default "Exercices MathAlea" }}
+<div class="mathalea-embed mathalea-shortcode">
+  <p class="mathalea-shortcode-label">{{ $label }}</p>
+  <iframe
+    src="https://coopmaths.fr/alea/?ex={{ $params }}"
+    class="mathalea-iframe"
+    title="{{ $label }}"
+    loading="lazy"
+    sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+    allowfullscreen>
+  </iframe>
+  <a href="https://coopmaths.fr/alea/?ex={{ $params }}" class="mathalea-external"
+     target="_blank" rel="noopener">
+    Ouvrir dans MathAlea ↗
+  </a>
+</div>

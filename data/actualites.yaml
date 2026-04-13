@@ -1,0 +1,13 @@
+items:
+  - texte: "DS n°4 Calcul Intégral — Term Spé — Mercredi 18 mars"
+    niveau: terminale-specialite
+    date: "2026-03-18"
+  - texte: "Nouveau cours Ch.4 : Calcul Intégral disponible"
+    niveau: terminale-specialite
+    date: "2026-03-01"
+  - texte: "DS n°1 Fonctions — Seconde — Vendredi 24 avril"
+    niveau: seconde
+    date: "2026-04-24"
+  - texte: "Correction DS n°3 en ligne — Term Spé"
+    niveau: terminale-specialite
+    date: "2026-04-10"

@@ -1,0 +1,58 @@
+baseURL = 'https://olaurent.github.io/'
+languageCode = 'fr-FR'
+title = 'OXL MATH'
+enableRobotsTXT = true
+enableGitInfo = true
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[markup.highlight]
+  noClasses = false
+
+[params]
+  description = "Ressources de mathématiques — OXL MATH"
+  author = "Olivier Xavier Laurent"
+  anneeEnCours = "2025-2026"
+
+  # Couleurs par niveau (CSS var injectées dynamiquement)
+  [params.couleurs]
+    seconde            = "#00D4FF"
+    premiere-specialite = "#8A2BE2"
+    terminale-specialite = "#4B0082"
+    maths-expertes     = "#D4AF37"
+    snt                = "#00FF88"
+
+  # Slogans landing page
+  [params.slogans]
+    seconde            = "L'entrée au lycée."
+    premiere-specialite = "L'analyse et la rigueur."
+    terminale-specialite = "Vers le baccalauréat."
+    maths-expertes     = "L'abstraction pure."
+
+[menu]
+  [[menu.main]]
+    identifier = "seconde"
+    name       = "2nde"
+    url        = "/seconde/"
+    weight     = 10
+  [[menu.main]]
+    identifier = "premiere"
+    name       = "1ère Spé"
+    url        = "/premiere-specialite/"
+    weight     = 20
+  [[menu.main]]
+    identifier = "terminale"
+    name       = "Term Spé"
+    url        = "/terminale-specialite/"
+    weight     = 30
+  [[menu.main]]
+    identifier = "expertes"
+    name       = "Maths Exp"
+    url        = "/maths-expertes/"
+    weight     = 40
+  [[menu.main]]
+    identifier = "tools"
+    name       = "Tools"
+    url        = "/tools/"
+    weight     = 50

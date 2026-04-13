@@ -1,0 +1,14 @@
+{{/* Shortcode : {{< pdf "/assets/pdf/cours.pdf" "Titre du document" >}} */}}
+{{ $url := .Get 0 }}
+{{ $label := .Get 1 | default "Voir le document" }}
+<div class="doc-card doc-shortcode">
+  <span class="doc-label">{{ $label }}</span>
+  <a href="{{ $url }}"
+     class="btn-ressource btn-cours glightbox"
+     data-type="iframe"
+     data-width="90%"
+     data-height="90vh"
+     aria-label="{{ $label }}">
+    📄 Ouvrir le PDF
+  </a>
+</div>

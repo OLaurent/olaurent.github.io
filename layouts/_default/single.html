@@ -1,0 +1,227 @@
+{{ define "main" }}
+{{ $section := .Section }}
+{{ $couleur := "#D4AF37" }}
+{{ if eq $section "seconde" }}{{ $couleur = "#00D4FF" }}
+{{ else if eq $section "premiere-specialite" }}{{ $couleur = "#8A2BE2" }}
+{{ else if eq $section "terminale-specialite" }}{{ $couleur = "#4B0082" }}
+{{ else if eq $section "maths-expertes" }}{{ $couleur = "#D4AF37" }}
+{{ end }}
+
+<article class="chapitre-page" style="--couleur-niveau: {{ $couleur }}">
+
+  {{/* EN-TÊTE CHAPITRE */}}
+  <header class="chapitre-header">
+    <nav class="breadcrumb" aria-label="Fil d'Ariane">
+      <a href="/">Accueil</a>
+      <span aria-hidden="true">›</span>
+      <a href="{{ .Parent.RelPermalink }}">{{ .Parent.Title }}</a>
+      <span aria-hidden="true">›</span>
+      <span aria-current="page">Ch.{{ .Params.numero }}</span>
+    </nav>
+    <div class="chapitre-header-content">
+      <div class="chapitre-numero-badge">Ch.{{ .Params.numero }}</div>
+      <div>
+        <h1 class="chapitre-titre">{{ .Title }}</h1>
+        {{ with .Description }}<p class="chapitre-desc">{{ . }}</p>{{ end }}
+      </div>
+      {{ if .Params.en_cours }}<span class="badge-encours">En cours</span>{{ end }}
+    </div>
+  </header>
+
+  {{/* CONTENU MARKDOWN LIBRE */}}
+  {{ with .Content }}
+  <section class="chapitre-contenu prose">
+    {{ . }}
+  </section>
+  {{ end }}
+
+  {{/* ═══════════════════════════════════════
+       GROUPE DOCUMENTS (COURS / EXOS / CORRIGÉS)
+  ══════════════════════════════════════════ */}}
+  {{ with .Params.documents }}
+  <section class="ressource-groupe" id="ressources" aria-labelledby="docs-titre">
+    <h2 class="groupe-titre" id="docs-titre">📁 Documents</h2>
+
+    {{/* Regrouper par type */}}
+    {{ $cours    := where . "type" "cours" }}
+    {{ $exercices := where . "type" "exercices" }}
+    {{ $corriges  := where . "type" "corrige" }}
+
+    {{ if $cours }}
+    <div class="docs-groupe">
+      <h3 class="docs-sous-titre">📄 Cours</h3>
+      <div class="docs-grid">
+        {{ range $cours }}
+        <div class="doc-card">
+          <span class="doc-label">{{ .label }}</span>
+          <a href="{{ .url }}" class="btn-ressource btn-cours glightbox"
+             data-type="iframe" data-width="90%" data-height="90vh"
+             {{ if .url | hasPrefix "http" }}target="_blank" rel="noopener"{{ end }}>
+            Ouvrir
+          </a>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+    {{ end }}
+
+    {{ if $exercices }}
+    <div class="docs-groupe">
+      <h3 class="docs-sous-titre">✏️ Exercices</h3>
+      <div class="docs-grid">
+        {{ range $exercices }}
+        <div class="doc-card">
+          <span class="doc-label">{{ .label }}</span>
+          <a href="{{ .url }}" class="btn-ressource btn-exos glightbox"
+             data-type="iframe" data-width="90%" data-height="90vh"
+             {{ if .url | hasPrefix "http" }}target="_blank" rel="noopener"{{ end }}>
+            Ouvrir
+          </a>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+    {{ end }}
+
+    {{ if $corriges }}
+    <div class="docs-groupe">
+      <h3 class="docs-sous-titre">✅ Corrigés</h3>
+      <div class="docs-grid">
+        {{ range $corriges }}
+        <div class="doc-card">
+          <span class="doc-label">{{ .label }}</span>
+          <a href="{{ .url }}" class="btn-ressource btn-corrige glightbox"
+             data-type="iframe" data-width="90%" data-height="90vh"
+             {{ if .url | hasPrefix "http" }}target="_blank" rel="noopener"{{ end }}>
+            Ouvrir
+          </a>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+    {{ end }}
+
+  </section>
+  {{ end }}
+
+  {{/* ═══════════════════════════════════════
+       GROUPE VIDÉOS (YOUTUBE)
+  ══════════════════════════════════════════ */}}
+  {{ with .Params.videos }}
+  <section class="ressource-groupe" id="videos" aria-labelledby="videos-titre">
+    <h2 class="groupe-titre" id="videos-titre">🎥 Capsules Vidéo</h2>
+    <div class="videos-grid">
+      {{ range . }}
+      <div class="video-card">
+        <a href="https://www.youtube.com/watch?v={{ .youtube_id }}"
+           class="video-thumb glightbox"
+           data-type="video"
+           data-source="youtube"
+           aria-label="{{ .label }}">
+          <img src="https://img.youtube.com/vi/{{ .youtube_id }}/mqdefault.jpg"
+               alt="{{ .label }}" loading="lazy" width="320" height="180">
+          <div class="video-play-btn" aria-hidden="true">▶</div>
+        </a>
+        <div class="video-info">
+          <span class="video-label">{{ .label }}</span>
+          {{ with .source }}<span class="video-source">{{ . }}</span>{{ end }}
+        </div>
+      </div>
+      {{ end }}
+    </div>
+  </section>
+  {{ end }}
+
+  {{/* ═══════════════════════════════════════
+       GROUPE MATHALEA
+  ══════════════════════════════════════════ */}}
+  {{ with .Params.mathalea }}
+  <section class="ressource-groupe" id="mathalea" aria-labelledby="mathalea-titre">
+    <h2 class="groupe-titre" id="mathalea-titre">🧮 Exercices MathAlea</h2>
+    <div class="mathalea-list">
+      {{ range . }}
+      <div class="mathalea-item">
+        <h3 class="mathalea-label">{{ .label }}</h3>
+        {{ partial "mathalea-iframe.html" .exercices }}
+      </div>
+      {{ end }}
+    </div>
+  </section>
+  {{ end }}
+
+  {{/* ═══════════════════════════════════════
+       GROUPE ÉVALUATIONS
+  ══════════════════════════════════════════ */}}
+  {{ with .Params.evaluations }}
+  <section class="ressource-groupe" id="evaluations" aria-labelledby="eval-titre">
+    <h2 class="groupe-titre" id="eval-titre">✍️ Évaluations</h2>
+    {{ range . }}
+    <div class="eval-block">
+      <h3 class="eval-titre">{{ .label }}</h3>
+      <div class="eval-buttons">
+        {{ with .sujet_url }}
+        <a href="{{ . }}" class="btn-ressource btn-sujet glightbox"
+           data-type="iframe" data-width="90%" data-height="90vh">
+          📄 Sujet
+        </a>
+        {{ end }}
+        {{ with .corrige_url }}
+        <a href="{{ . }}" class="btn-ressource btn-corrige glightbox"
+           data-type="iframe" data-width="90%" data-height="90vh">
+          ✅ Corrigé
+        </a>
+        {{ end }}
+      </div>
+      {{ with .date_ds }}
+      <p class="eval-date">Date : <time>{{ dateFormat "02 January 2006" . }}</time></p>
+      {{ end }}
+      {{ if .notes }}
+        {{ partial "stats-chart.html" . }}
+      {{ end }}
+    </div>
+    {{ end }}
+  </section>
+  {{ end }}
+
+  {{/* ═══════════════════════════════════════
+       COIN EXPERT
+  ══════════════════════════════════════════ */}}
+  {{ with .Params.coin_expert }}
+  <section class="ressource-groupe coin-expert-section" id="expert" aria-labelledby="expert-titre">
+    <h2 class="groupe-titre" id="expert-titre">🔬 Coin Expert</h2>
+    <div class="expert-list">
+      {{ range . }}
+      <div class="expert-item-wrap">
+        {{ if .url }}
+        <a href="{{ .url }}" class="expert-item" target="_blank" rel="noopener noreferrer">
+          {{ .label }} →
+        </a>
+        {{ else if .mathalea }}
+        <div class="expert-item">
+          <span class="expert-label">{{ .label }}</span>
+          {{ partial "mathalea-iframe.html" .mathalea }}
+        </div>
+        {{ end }}
+      </div>
+      {{ end }}
+    </div>
+  </section>
+  {{ end }}
+
+  {{/* NAVIGATION ENTRE CHAPITRES */}}
+  <nav class="chapitre-nav" aria-label="Navigation entre chapitres">
+    {{ with .PrevInSection }}
+    <a href="{{ .RelPermalink }}" class="chapitre-nav-prev">
+      ← Ch.{{ .Params.numero }} : {{ .Title }}
+    </a>
+    {{ end }}
+    <a href="{{ .Parent.RelPermalink }}" class="chapitre-nav-up">↑ Retour au niveau</a>
+    {{ with .NextInSection }}
+    <a href="{{ .RelPermalink }}" class="chapitre-nav-next">
+      Ch.{{ .Params.numero }} : {{ .Title }} →
+    </a>
+    {{ end }}
+  </nav>
+
+</article>
+{{ end }}
