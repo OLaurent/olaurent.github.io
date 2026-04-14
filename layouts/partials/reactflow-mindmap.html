@@ -17,8 +17,18 @@
 <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
 <script>
 (function() {
-  const { ReactFlowProvider, ReactFlow } = window.ReactFlowCore;
-  const mindmapConfig = JSON.parse({{ $mindmap | jsonify }});
+  const ReactFlowLib = window.ReactFlowCore || window.ReactFlow || {};
+  const { ReactFlowProvider, ReactFlow } = ReactFlowLib;
+  if (!ReactFlowProvider || !ReactFlow) {
+    console.error('React Flow failed to load. Expected window.ReactFlowCore or window.ReactFlow.');
+    return;
+  }
+  const dagreLib = window.dagre;
+  if (!dagreLib || !dagreLib.graphlib) {
+    console.error('Dagre failed to load. Expected window.dagre with graphlib.');
+    return;
+  }
+  const mindmapConfig = {{ $mindmap | jsonify }};
   const containerId = "reactflow-mindmap-{{ $pageId }}";
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -85,13 +95,13 @@
   }
 
   function layoutElements(nodes, edges, direction = 'TB') {
-    const graph = new dagre.graphlib.Graph();
+    const graph = new dagreLib.graphlib.Graph();
     graph.setGraph({ rankdir: direction, ranksep: 70, nodesep: 24, marginx: 20, marginy: 20 });
     graph.setDefaultEdgeLabel(() => ({}));
 
     nodes.forEach(node => graph.setNode(node.id, { width: nodeWidth, height: nodeHeight }));
     edges.forEach(edge => graph.setEdge(edge.source, edge.target));
-    dagre.layout(graph);
+    dagreLib.layout(graph);
 
     return {
       nodes: nodes.map(node => {
