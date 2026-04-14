@@ -29,8 +29,8 @@
     ]
   });"></script>
 
-{{/* Main CSS (Hugo Pipes SCSS) */}}
-{{ $scss := resources.Get "scss/main.scss" | toCSS (dict "targetPath" "css/main.css" "enableSourceMap" false) | minify }}
+{{/* Main CSS (Hugo Pipes SCSS — Dart Sass) */}}
+{{ $scss := resources.Get "scss/main.scss" | toCSS (dict "transpiler" "dartsass" "targetPath" "css/main.css" "enableSourceMap" false) | minify }}
 <link rel="stylesheet" href="{{ $scss.RelPermalink }}">
 
 {{/* Couleur dynamique du niveau courant */}}

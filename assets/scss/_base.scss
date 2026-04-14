@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════
 // OXL MATH — Reset & Base
 // ═══════════════════════════════════════════════════════
+@use 'variables' as *;
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
