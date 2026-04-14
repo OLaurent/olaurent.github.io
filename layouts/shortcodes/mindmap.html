@@ -1,11 +1,59 @@
-<div id="mindmap-{{ .Get 0 | default "1" }}" class="oxl-mindmap-container markmap">
-  <script type="text/markdown">
+<div id="mindmap-wrapper-{{ .Get 0 | default "1" }}" class="oxl-mindmap-wrapper">
+  <div id="mindmap-{{ .Get 0 | default "1" }}" class="oxl-mindmap-container markmap">
+    <script type="text/markdown">
 {{ .Inner | safeHTML }}
-  </script>
+    </script>
+  </div>
+  <button type="button" class="mindmap-fullscreen-btn" aria-label="Plein écran">Plein écran</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
+<script>
+(function() {
+  const id = '{{ .Get 0 | default "1" }}';
+  const wrapper = document.getElementById(`mindmap-wrapper-${id}`);
+  if (!wrapper) return;
+  const btn = wrapper.querySelector('.mindmap-fullscreen-btn');
+  const enter = () => {
+    if (wrapper.requestFullscreen) return wrapper.requestFullscreen();
+    if (wrapper.webkitRequestFullscreen) return wrapper.webkitRequestFullscreen();
+    if (wrapper.mozRequestFullScreen) return wrapper.mozRequestFullScreen();
+    if (wrapper.msRequestFullscreen) return wrapper.msRequestFullscreen();
+  };
+  const exit = () => {
+    if (document.exitFullscreen) return document.exitFullscreen();
+    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+    if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+    if (document.msExitFullscreen) return document.msExitFullscreen();
+  };
+  btn.addEventListener('click', () => {
+    if (document.fullscreenElement === wrapper || document.webkitFullscreenElement === wrapper || document.mozFullScreenElement === wrapper || document.msFullscreenElement === wrapper) {
+      exit();
+    } else {
+      enter();
+    }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    const isFull = document.fullscreenElement === wrapper;
+    btn.textContent = isFull ? 'Quitter le plein écran' : 'Plein écran';
+    btn.classList.toggle('is-active', isFull);
+  });
+  document.addEventListener('webkitfullscreenchange', () => {
+    const isFull = document.webkitFullscreenElement === wrapper;
+    btn.textContent = isFull ? 'Quitter le plein écran' : 'Plein écran';
+    btn.classList.toggle('is-active', isFull);
+  });
+  document.addEventListener('mozfullscreenchange', () => {
+    const isFull = document.mozFullScreenElement === wrapper;
+    btn.textContent = isFull ? 'Quitter le plein écran' : 'Plein écran';
+    btn.classList.toggle('is-active', isFull);
+  });
+})();
+</script>
 <style>
+  .oxl-mindmap-wrapper {
+    position: relative;
+  }
   .oxl-mindmap-container {
     width: 100%;
     height: 500px;
@@ -15,6 +63,44 @@
     margin: 20px 0;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .mindmap-fullscreen-btn {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    z-index: 10;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    background: rgba(8, 10, 18, 0.85);
+    color: #F5E8B8;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+  .mindmap-fullscreen-btn:hover,
+  .mindmap-fullscreen-btn.is-active {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: #D4AF37;
+    transform: translateY(-1px);
+  }
+  .oxl-mindmap-wrapper:fullscreen,
+  .oxl-mindmap-wrapper:-webkit-full-screen,
+  .oxl-mindmap-wrapper:-moz-full-screen,
+  .oxl-mindmap-wrapper:-ms-fullscreen {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background: #080a12;
+  }
+  .oxl-mindmap-wrapper:fullscreen .oxl-mindmap-container,
+  .oxl-mindmap-wrapper:-webkit-full-screen .oxl-mindmap-container,
+  .oxl-mindmap-wrapper:-moz-full-screen .oxl-mindmap-container,
+  .oxl-mindmap-wrapper:-ms-fullscreen .oxl-mindmap-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    margin: 0;
   }
   .markmap {
     width: 100%;

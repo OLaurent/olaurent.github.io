@@ -48,11 +48,32 @@ coin_expert:
 ## Carte mentale
 
 {{< mindmap 1 >}}
-# Calcul intégral
-- Intégrale définie = aire signée sous la courbe entre a et b.
-- Si $f \ge 0$ sur $[a,b]$, l'intégrale correspond à une aire positive.
-- La primitive $F$ vérifie $F' = f$ et $\int_a^b f = F(b) - F(a)$.
-- Changement de variable et intégration par parties.
+# Intégration
+
+## Lien avec primitive
+
+- $I = \int_a^b f(x)dx = \left[ F(x)\right]_a^b=F(b)-F(a)$
+
+## Propriétés algébriques
+
+- $\forall \alpha \in \R, \int_a^b (f + \alpha g)(x)dx= \int_a^b f(x)dx+ \alpha\int_a^b g(x)dx$
+- $\int_a^a f(x)dx=0$
+- $\int_b^a f(x)dx=-\int_a^b f(x)dx$
+- $\int_a^b f(x)dx+\int_b^c f(x)dx=\int_a^c f(x)dx=0$
+
+## Inégalités
+
+- Si $f \geqslant 0$ sur $\[a;b]$, alors $\int_a^b f(x)dx \geqslant 0$
+- Si $f \geqslant g$ sur $\[a;b]$, alors $\int_a^b f(x)dx \geqslant \int_a^b g(x)dx$
+
+
+## Valeur moyenne
+
+- $\mu = \dfrac{1}{b-a} \int_a^b f(x)dx$
+
+## Intégration par parties
+
+- $\int_a^b u(x)v'(x)dx=\left[u(x)v(x)\right]_a^b-\int_a^b u(x)v'(x)dx$
 {{< /mindmap >}}
 
 ## Rappels utiles
