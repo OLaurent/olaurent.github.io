@@ -14,14 +14,17 @@ documents:
     url: "/assets/pdf/seconde/ch05-exos.pdf"
 
 videos:
-  - label: "Titre de la vidéo"
-    youtube_id: "XXXXXXXXXXX"
-    source: "Mathsettiques"
+  - label: "Calculer une intégrale"
+    youtube_id: "Z3vKJJE57Uw"
+    source: "Yvan Monka"
+  - label: "Effectuer une intégration par parties"
+    youtube_id: "xbb3vnzF3EA"
+    source: "Yvan Monka"
 
 mathalea:
   - label: "MathAlea - Exercice"
-    exercices: "Ux3p,nb=5&v=eleve"
-
+    exercices: "id=TSA8-10&nb=5&s=false&i=1&v=eleve"
+    
 evaluations:
   - label: "DS n°X — Sujet"
     sujet_url: "/assets/pdf/seconde/ds01-sujet.pdf"
