@@ -631,6 +631,48 @@
   }
 }
 
+.chapitre-mindmap {
+  margin-bottom: $spacing-xl;
+
+  .groupe-titre {
+    margin-bottom: $spacing-sm;
+  }
+
+  .mindmap-card {
+    background: linear-gradient(180deg, rgba(var(--couleur-niveau-rgb,212,175,55), 0.14), rgba(255,255,255,0.05));
+    border: 1px solid rgba(var(--couleur-niveau-rgb,212,175,55), 0.18);
+    border-radius: $radius-lg;
+    padding: $spacing-lg;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  .mindmap-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: $spacing-sm;
+  }
+
+  .mindmap-list li {
+    position: relative;
+    padding-left: $spacing-xl;
+    color: $text-secondary;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .mindmap-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0.12em;
+    color: var(--couleur-niveau);
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+}
+
 .chapitre-nav {
   display: flex;
   justify-content: space-between;
