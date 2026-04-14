@@ -20,73 +20,45 @@
   function getReactFlowGlobals() {
     const flowCore = window.ReactFlowCore || null;
     const flowGlobal = window.ReactFlow || null;
+    const flowCoreDefault = flowCore?.default || null;
+    const flowGlobalDefault = flowGlobal?.default || null;
 
     const candidates = [
       flowCore,
-      flowCore?.default,
-      flowCore?.ReactFlow,
-      flowCore?.default?.ReactFlow,
+      flowCoreDefault,
       flowGlobal,
-      flowGlobal?.default,
-      flowGlobal?.ReactFlow,
-      flowGlobal?.default?.ReactFlow
+      flowGlobalDefault
     ].filter(Boolean);
 
-    let ReactFlowProvider = window.ReactFlowProvider ||
+    const ReactFlowProvider =
+      window.ReactFlowProvider ||
       flowCore?.ReactFlowProvider ||
-      flowCore?.default?.ReactFlowProvider ||
-      flowCore?.ReactFlow?.ReactFlowProvider ||
-      flowCore?.default?.ReactFlow?.ReactFlowProvider ||
+      flowCoreDefault?.ReactFlowProvider ||
       flowGlobal?.ReactFlowProvider ||
-      flowGlobal?.default?.ReactFlowProvider ||
-      flowGlobal?.ReactFlow?.ReactFlowProvider ||
-      flowGlobal?.default?.ReactFlow?.ReactFlowProvider ||
-      candidates.find(c => c?.ReactFlowProvider)?.ReactFlowProvider;
+      flowGlobalDefault?.ReactFlowProvider ||
+      candidates.find(c => typeof c?.ReactFlowProvider === 'function')?.ReactFlowProvider ||
+      candidates.find(c => typeof c?.default?.ReactFlowProvider === 'function')?.default?.ReactFlowProvider;
+
+    function resolveReactFlow(candidate) {
+      if (!candidate) return null;
+      if (typeof candidate === 'function') return candidate;
+      if (typeof candidate.ReactFlow === 'function') return candidate.ReactFlow;
+      if (typeof candidate.default === 'function') return candidate.default;
+      if (typeof candidate.default?.ReactFlow === 'function') return candidate.default.ReactFlow;
+      return null;
+    }
 
     let ReactFlow = null;
     for (const candidate of candidates) {
-      if (typeof candidate?.ReactFlow === 'function') {
-        ReactFlow = candidate.ReactFlow;
-        break;
-      }
-      if (typeof candidate === 'function') {
-        ReactFlow = candidate;
-        break;
-      }
-      if (candidate?.default && typeof candidate.default === 'function') {
-        ReactFlow = candidate.default;
-        break;
-      }
-      if (candidate?.default?.ReactFlow && typeof candidate.default.ReactFlow === 'function') {
-        ReactFlow = candidate.default.ReactFlow;
+      const resolved = resolveReactFlow(candidate);
+      if (resolved) {
+        ReactFlow = resolved;
         break;
       }
     }
 
-    if (!ReactFlow && typeof flowCore?.ReactFlow === 'function') {
-      ReactFlow = flowCore.ReactFlow;
-    }
-    if (!ReactFlow && typeof flowGlobal?.ReactFlow === 'function') {
-      ReactFlow = flowGlobal.ReactFlow;
-    }
-    if (!ReactFlow && typeof flowCore?.default?.ReactFlow === 'function') {
-      ReactFlow = flowCore.default.ReactFlow;
-    }
-    if (!ReactFlow && typeof flowGlobal?.default?.ReactFlow === 'function') {
-      ReactFlow = flowGlobal.default.ReactFlow;
-    }
-    if (!ReactFlow && typeof flowCore?.default === 'function') {
-      ReactFlow = flowCore.default;
-    }
-    if (!ReactFlow && typeof flowGlobal?.default === 'function') {
-      ReactFlow = flowGlobal.default;
-    }
-
-    if (!ReactFlowProvider && ReactFlow?.ReactFlowProvider) {
-      ReactFlowProvider = ReactFlow.ReactFlowProvider;
-    }
-    if (!ReactFlowProvider && ReactFlow?.default?.ReactFlowProvider) {
-      ReactFlowProvider = ReactFlow.default.ReactFlowProvider;
+    if (!ReactFlow) {
+      ReactFlow = resolveReactFlow(flowCore) || resolveReactFlow(flowGlobal) || resolveReactFlow(flowCoreDefault) || resolveReactFlow(flowGlobalDefault);
     }
 
     return {
@@ -97,6 +69,8 @@
       dagreLib: window.dagre,
       flowCore,
       flowGlobal,
+      flowCoreDefault,
+      flowGlobalDefault,
       candidates
     };
   }
