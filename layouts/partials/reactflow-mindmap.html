@@ -18,7 +18,7 @@
 <script>
 (function() {
   const { ReactFlowProvider, ReactFlow } = window.ReactFlowCore;
-  const mindmapConfig = {{ $mindmap | jsonify }};
+  const mindmapConfig = JSON.parse({{ $mindmap | jsonify }});
   const containerId = "reactflow-mindmap-{{ $pageId }}";
   const container = document.getElementById(containerId);
   if (!container) return;
