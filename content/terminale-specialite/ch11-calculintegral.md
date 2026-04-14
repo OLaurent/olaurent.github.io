@@ -8,7 +8,7 @@ description: "Intégrales définies et aires sous la courbe."
 documents:
   - label: "Cours complet"
     type: cours
-    url: "/assets/pdf/terminale-specialite/ch11/TEDS11 - Calcul intégral - Cours.pdf"
+    url: "/assets/pdf/terminales-specialite/TEDS11 - Calcul Integral/Cours/TEDS11 - Calcul intégral - Cours.pdf"
   - label: "Exercices"
     type: exercices
     url: "/assets/pdf/seconde/ch05-exos.pdf"
@@ -37,3 +37,15 @@ coin_expert:
   - label: "Lien d'approfondissement"
     url: "https://..."
 ---
+
+## Ce que ce chapitre travaille
+
+- Intégrale définie et aire sous la courbe pour une fonction continue positive.
+- Définition de $F_a(x)=\int_a^x f(t)\,dt$ et lien avec la primitive.
+- Relation $\int_a^b f(x)\,dx = F(b)-F(a)$.
+- Intégrale signée pour les fonctions de signe quelconque.
+
+## Rappels utiles
+
+- Primitives et dérivées.
+- Exemples de fonctions simples dont on sait trouver des primitives.
