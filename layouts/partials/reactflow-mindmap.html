@@ -18,14 +18,30 @@
 <script>
 (function() {
   function getReactFlowGlobals() {
+    const flowCore = window.ReactFlowCore || null;
+    const flowGlobal = window.ReactFlow || null;
+
     const candidates = [
-      window.ReactFlowCore,
-      window.ReactFlowCore?.default,
-      window.ReactFlow,
-      window.ReactFlow?.default
+      flowCore,
+      flowCore?.default,
+      flowCore?.ReactFlow,
+      flowCore?.default?.ReactFlow,
+      flowGlobal,
+      flowGlobal?.default,
+      flowGlobal?.ReactFlow,
+      flowGlobal?.default?.ReactFlow
     ].filter(Boolean);
 
-    const ReactFlowProvider = window.ReactFlowProvider || window.ReactFlowCore?.ReactFlowProvider || window.ReactFlowCore?.default?.ReactFlowProvider || window.ReactFlow?.ReactFlowProvider || window.ReactFlow?.default?.ReactFlowProvider || candidates.find(c => c?.ReactFlowProvider)?.ReactFlowProvider;
+    let ReactFlowProvider = window.ReactFlowProvider ||
+      flowCore?.ReactFlowProvider ||
+      flowCore?.default?.ReactFlowProvider ||
+      flowCore?.ReactFlow?.ReactFlowProvider ||
+      flowCore?.default?.ReactFlow?.ReactFlowProvider ||
+      flowGlobal?.ReactFlowProvider ||
+      flowGlobal?.default?.ReactFlowProvider ||
+      flowGlobal?.ReactFlow?.ReactFlowProvider ||
+      flowGlobal?.default?.ReactFlow?.ReactFlowProvider ||
+      candidates.find(c => c?.ReactFlowProvider)?.ReactFlowProvider;
 
     let ReactFlow = null;
     for (const candidate of candidates) {
@@ -47,8 +63,24 @@
       }
     }
 
-    if (!ReactFlow && window.ReactFlow) {
-      ReactFlow = window.ReactFlow;
+    if (!ReactFlow && flowCore?.ReactFlow) {
+      ReactFlow = flowCore.ReactFlow;
+    }
+    if (!ReactFlow && flowGlobal?.ReactFlow) {
+      ReactFlow = flowGlobal.ReactFlow;
+    }
+    if (!ReactFlow && flowCore?.default) {
+      ReactFlow = flowCore.default;
+    }
+    if (!ReactFlow && flowGlobal?.default) {
+      ReactFlow = flowGlobal.default;
+    }
+
+    if (!ReactFlowProvider && ReactFlow?.ReactFlowProvider) {
+      ReactFlowProvider = ReactFlow.ReactFlowProvider;
+    }
+    if (!ReactFlowProvider && ReactFlow?.default?.ReactFlowProvider) {
+      ReactFlowProvider = ReactFlow.default.ReactFlowProvider;
     }
 
     return {
@@ -56,7 +88,10 @@
       ReactDOM: window.ReactDOM,
       ReactFlow,
       ReactFlowProvider,
-      dagreLib: window.dagre
+      dagreLib: window.dagre,
+      flowCore,
+      flowGlobal,
+      candidates
     };
   }
 
