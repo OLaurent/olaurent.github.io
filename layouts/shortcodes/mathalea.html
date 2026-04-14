@@ -4,14 +4,14 @@
 <div class="mathalea-embed mathalea-shortcode">
   <p class="mathalea-shortcode-label">{{ $label }}</p>
   <iframe
-    src="https://coopmaths.fr/alea/?ex={{ $params }}"
+    src="https://coopmaths.fr/alea/?{{ $params }}"
     class="mathalea-iframe"
     title="{{ $label }}"
     loading="lazy"
     sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
     allowfullscreen>
   </iframe>
-  <a href="https://coopmaths.fr/alea/?ex={{ $params }}" class="mathalea-external"
+  <a href="https://coopmaths.fr/alea/?{{ $params }}" class="mathalea-external"
      target="_blank" rel="noopener">
     Ouvrir dans MathAlea ↗
   </a>
