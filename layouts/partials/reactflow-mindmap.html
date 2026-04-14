@@ -18,25 +18,37 @@
 <script>
 (function() {
   function getReactFlowGlobals() {
-    const flowCore = window.ReactFlowCore || null;
-    const flowGlobal = window.ReactFlow || null;
-    const candidates = [];
+    const candidates = [
+      window.ReactFlowCore,
+      window.ReactFlowCore?.default,
+      window.ReactFlow,
+      window.ReactFlow?.default
+    ].filter(Boolean);
 
-    if (flowCore) candidates.push(flowCore);
-    if (flowCore?.default) candidates.push(flowCore.default);
-    if (flowGlobal) candidates.push(flowGlobal);
-    if (flowGlobal?.default) candidates.push(flowGlobal.default);
+    const ReactFlowProvider = window.ReactFlowProvider || window.ReactFlowCore?.ReactFlowProvider || window.ReactFlowCore?.default?.ReactFlowProvider || window.ReactFlow?.ReactFlowProvider || window.ReactFlow?.default?.ReactFlowProvider || candidates.find(c => c?.ReactFlowProvider)?.ReactFlowProvider;
 
-    const ReactFlowProvider = candidates.find(c => c?.ReactFlowProvider)?.ReactFlowProvider;
-    let ReactFlow = candidates.find(c => typeof c?.ReactFlow === 'function')?.ReactFlow;
-    if (!ReactFlow) {
-      ReactFlow = candidates.find(c => typeof c === 'function');
+    let ReactFlow = null;
+    for (const candidate of candidates) {
+      if (typeof candidate?.ReactFlow === 'function') {
+        ReactFlow = candidate.ReactFlow;
+        break;
+      }
+      if (typeof candidate === 'function') {
+        ReactFlow = candidate;
+        break;
+      }
+      if (candidate?.default && typeof candidate.default === 'function') {
+        ReactFlow = candidate.default;
+        break;
+      }
+      if (candidate?.default?.ReactFlow) {
+        ReactFlow = candidate.default.ReactFlow;
+        break;
+      }
     }
-    if (!ReactFlow && flowCore?.ReactFlow) {
-      ReactFlow = flowCore.ReactFlow;
-    }
-    if (!ReactFlow && flowGlobal?.ReactFlow) {
-      ReactFlow = flowGlobal.ReactFlow;
+
+    if (!ReactFlow && window.ReactFlow) {
+      ReactFlow = window.ReactFlow;
     }
 
     return {
@@ -183,6 +195,7 @@
       ReactFlowProvider: !!globals.ReactFlowProvider,
       dagreLib: !!globals.dagreLib
     });
+    console.log('ReactFlow type:', typeof globals.ReactFlow, globals.ReactFlow);
     if (!globals.React || !globals.ReactDOM || !globals.ReactDOM.createRoot || !globals.ReactFlowProvider || !globals.ReactFlow) {
       return false;
     }
