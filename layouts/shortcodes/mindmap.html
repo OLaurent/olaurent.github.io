@@ -1,5 +1,4 @@
-<div class="oxl-mindmap-container">
-  <svg id="mindmap-{{ .Get 0 | default "1" }}" class="markmap"></svg>
+<div id="mindmap-{{ .Get 0 | default "1" }}" class="oxl-mindmap-container markmap">
   <script type="text/markdown">
 {{ .Inner | safeHTML }}
   </script>
