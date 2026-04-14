@@ -1,7 +1,7 @@
 ---
 title: "Calcul Intégral"
 numero: 4
-en_cours: true
+en_cours: false
 annee: "2025-2026"
 description: "Primitives, intégrales définies et aires sous la courbe."
 

@@ -371,18 +371,20 @@
     font-size: 0.85rem;
     font-weight: 500;
     color: $text-secondary;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+    max-width: 100%;
     &:hover { color: $text-primary; text-decoration: none; }
   }
 
   .flux-desc {
     font-size: 0.72rem;
     color: $text-muted;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+    max-width: 100%;
   }
 }
 

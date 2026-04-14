@@ -21,10 +21,10 @@ mathalea:
     exercices: "can3F06,nb=5&v=eleve"
 
 evaluations:
-  - label: "DS n°1 — Suites"
-    sujet_url: "/assets/pdf/terminale-specialite/ds01-sujet.pdf"
+  - label: "DS n°1 — Suites et probabilités"
+    sujet_url: "/assets/pdf/terminale-specialite/ds/TEDS - DS01.pdf"
     corrige_url: "/assets/pdf/terminale-specialite/ds01-corrige.pdf"
-    date_ds: "2025-10-15"
-    notes: [5, 7, 8, 9, 10, 10, 11, 11, 12, 13, 13, 14, 14, 15, 16, 17, 17, 18, 19, 20]
-    feedback: "Très bon bilan global. La récurrence est bien maîtrisée par la majorité."
+    date_ds: "2024-09-30"
+    notes: [16.75, 14, 11, 10.25, 8.75, 11.25, 5, 10, 12.25, 10, 6.25, 12, 4.75, 10.25, 18.5, 8.5, 11.5, 13.75, 20, 1.75, 4.75]
+    feedback: "Un premier devoir un peu juste. La récurrence est assez bien maîtrisée par la majorité."
 ---

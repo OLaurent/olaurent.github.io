@@ -1,7 +1,7 @@
 ---
 title: "Calcul intégral"
 numero: 11
-en_cours: false
+en_cours: true
 annee: "2025-2026"
 description: "Intégrales définies et aires sous la courbe."
 
