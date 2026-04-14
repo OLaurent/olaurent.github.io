@@ -17,8 +17,9 @@
 <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
 <script>
 (function() {
-  const ReactFlowLib = window.ReactFlowCore || window.ReactFlow || {};
-  const { ReactFlowProvider, ReactFlow } = ReactFlowLib;
+  const ReactFlowCore = window.ReactFlowCore || window.ReactFlow || {};
+  const ReactFlowProvider = ReactFlowCore.ReactFlowProvider;
+  const ReactFlow = ReactFlowCore.ReactFlow;
   if (!ReactFlowProvider || !ReactFlow) {
     console.error('React Flow failed to load. Expected window.ReactFlowCore or window.ReactFlow.');
     return;
