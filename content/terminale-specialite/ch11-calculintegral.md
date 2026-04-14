@@ -36,6 +36,31 @@ evaluations:
 coin_expert:
   - label: "Lien d'approfondissement"
     url: "https://..."
+
+mindmap:
+  title: "Calcul intégral"
+  layout: "TB"
+  root:
+    label: "Calcul intégral"
+    description: "Comprendre le lien entre primitive, intégrale et aire."
+    children:
+      - label: "Primitives"
+        latex: "F'(x)=f(x)"
+        description: "F' est la fonction dérivée de F."
+      - label: "Intégrale définie"
+        latex: "\\int_a^b f(x) \\, dx"
+        children:
+          - label: "Aire signée"
+            description: "L'aire est positive si f ≥ 0."
+          - label: "Relation fondamentale"
+            latex: "F(b)-F(a)"
+            description: "Lien avec la primitive."
+      - label: "Propriétés"
+        children:
+          - label: "Linéarité"
+            description: "\"∫(f+g)=∫f+∫g\""
+          - label: "Changement de variable"
+            description: "Technique très utilisée."
 ---
 
 ## Ce que ce chapitre travaille
@@ -44,37 +69,6 @@ coin_expert:
 - Définition de $F_a(x)=\int_a^x f(t)\,dt$ et lien avec la primitive.
 - Relation $\int_a^b f(x)\,dx = F(b)-F(a)$.
 - Intégrale signée pour les fonctions de signe quelconque.
-
-## Carte mentale
-
-{{< mindmap 1 >}}
-# Intégration
-
-## Lien avec primitive
-
-- $I = \int_a^b f(x)dx = \left[ F(x)\right]_a^b=F(b)-F(a)$
-
-## Propriétés algébriques
-
-- $\forall \alpha \in \R, \int_a^b (f + \alpha g)(x)dx= \int_a^b f(x)dx+ \alpha\int_a^b g(x)dx$
-- $\int_a^a f(x)dx=0$
-- $\int_b^a f(x)dx=-\int_a^b f(x)dx$
-- $\int_a^b f(x)dx+\int_b^c f(x)dx=\int_a^c f(x)dx=0$
-
-## Inégalités
-
-- Si $f \geqslant 0$ sur $\[a;b]$, alors $\int_a^b f(x)dx \geqslant 0$
-- Si $f \geqslant g$ sur $\[a;b]$, alors $\int_a^b f(x)dx \geqslant \int_a^b g(x)dx$
-
-
-## Valeur moyenne
-
-- $\mu = \dfrac{1}{b-a} \int_a^b f(x)dx$
-
-## Intégration par parties
-
-- $\int_a^b u(x)v'(x)dx=\left[u(x)v(x)\right]_a^b-\int_a^b u(x)v'(x)dx$
-{{< /mindmap >}}
 
 ## Rappels utiles
 

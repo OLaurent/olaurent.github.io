@@ -1,0 +1,209 @@
+{{ $mindmap := .Params.mindmap }}
+{{ if $mindmap }}
+{{ $pageId := .File.BaseFileName }}
+<section class="chapitre-mindmap-section" aria-labelledby="mindmap-titre-{{ $pageId }}">
+  <h2 class="groupe-titre" id="mindmap-titre-{{ $pageId }}">
+    {{ with $mindmap.title }}{{ . }}{{ else }}Carte mentale{{ end }}
+  </h2>
+  <div class="reactflow-mindmap-wrapper">
+    <div class="reactflow-mindmap-container" id="reactflow-mindmap-{{ $pageId }}"></div>
+  </div>
+</section>
+
+<script type="module">
+  import React from 'https://esm.sh/react@18.3.1?bundle';
+  import ReactDOM from 'https://esm.sh/react-dom@18.3.1/client?bundle';
+  import { ReactFlowProvider, ReactFlow } from 'https://esm.sh/@reactflow/core@11.11.4?bundle';
+  import dagre from 'https://esm.sh/dagre@0.8.5?bundle';
+
+  const mindmapConfig = {{ $mindmap | jsonify }};
+  const containerId = "reactflow-mindmap-{{ $pageId }}";
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const nodeWidth = 260;
+  const nodeHeight = 100;
+  const defaultNodeStyle = {
+    background: 'rgba(22, 27, 51, 0.95)',
+    color: '#FFFACD',
+    border: '1px solid #D4AF37',
+    borderRadius: '12px',
+    boxShadow: '0 18px 40px rgba(0,0,0,0.3)',
+    width: nodeWidth,
+    padding: '0',
+  };
+
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function buildLabelHtml(node) {
+    const title = `<div class="mindmap-node-title">${escapeHtml(node.label || node.title || '')}</div>`;
+    const latex = node.latex ? `<div class="mindmap-node-latex">\\(${escapeHtml(node.latex)}\\)</div>` : '';
+    const description = node.description ? `<div class="mindmap-node-desc">${escapeHtml(node.description)}</div>` : '';
+    return `${title}${latex}${description}`;
+  }
+
+  function createNode(node, parentId) {
+    const id = node.id || `${parentId || 'root'}-${Math.random().toString(36).slice(2, 8)}`;
+    return {
+      id,
+      data: {
+        label: React.createElement('div', { className: 'reactflow-node-label', dangerouslySetInnerHTML: { __html: buildLabelHtml(node) } })
+      },
+      position: { x: 0, y: 0 },
+      style: Object.assign({}, defaultNodeStyle, node.style || {}),
+      sourcePosition: 'bottom',
+      targetPosition: 'top'
+    };
+  }
+
+  function walkTree(node, parentId = null, all = { nodes: [], edges: [] }) {
+    const id = node.id || `node-${Math.random().toString(36).slice(2, 8)}`;
+    const flowNode = createNode(Object.assign({}, node, { id }), parentId);
+    all.nodes.push(flowNode);
+    if (parentId) {
+      all.edges.push({
+        id: `e-${parentId}-${id}`,
+        source: parentId,
+        target: id,
+        animated: node.animated === true,
+        style: { stroke: '#D4AF37', strokeWidth: 2.5 }
+      });
+    }
+    if (Array.isArray(node.children)) {
+      node.children.forEach(child => walkTree(child, id, all));
+    }
+    return all;
+  }
+
+  function layoutElements(nodes, edges, direction = 'TB') {
+    const graph = new dagre.graphlib.Graph();
+    graph.setGraph({ rankdir: direction, ranksep: 70, nodesep: 24, marginx: 20, marginy: 20 });
+    graph.setDefaultEdgeLabel(() => ({}));
+
+    nodes.forEach(node => graph.setNode(node.id, { width: nodeWidth, height: nodeHeight }));
+    edges.forEach(edge => graph.setEdge(edge.source, edge.target));
+    dagre.layout(graph);
+
+    return {
+      nodes: nodes.map(node => {
+        const nodeWithPosition = graph.node(node.id);
+        return Object.assign({}, node, {
+          position: {
+            x: nodeWithPosition.x - nodeWidth / 2,
+            y: nodeWithPosition.y - nodeHeight / 2
+          }
+        });
+      }),
+      edges
+    };
+  }
+
+  const treeRoot = mindmapConfig.root || mindmapConfig;
+  const { nodes: builtNodes, edges: builtEdges } = walkTree(treeRoot);
+  const { nodes, edges } = layoutElements(builtNodes, builtEdges, (mindmapConfig.layout || 'TB').toUpperCase());
+
+  function Flow() {
+    const [stateNodes] = React.useState(nodes);
+    const [stateEdges] = React.useState(edges);
+
+    React.useEffect(() => {
+      const target = document.getElementById(containerId);
+      if (window.renderMathInElement && target) {
+        window.renderMathInElement(target, {
+          delimiters: [
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    }, []);
+
+    return React.createElement(ReactFlow, {
+      nodes: stateNodes,
+      edges: stateEdges,
+      fitView: true,
+      fitViewOptions: { padding: 0.2 },
+      nodesDraggable: true,
+      nodesConnectable: false,
+      zoomOnScroll: true,
+      panOnDrag: true,
+      attributionPosition: 'bottom-left'
+    });
+  }
+
+  const root = ReactDOM.createRoot(container);
+  root.render(React.createElement(ReactFlowProvider, null, React.createElement(Flow, null)));
+</script>
+
+<style>
+  .reactflow-mindmap-wrapper {
+    width: 100%;
+    min-height: 580px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #080a12;
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  }
+
+  .reactflow-mindmap-container {
+    width: 100%;
+    min-height: 580px;
+    height: 100%;
+  }
+
+  .reactflow-node-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    text-align: center;
+    padding: 0.85rem 0.9rem;
+    line-height: 1.3;
+    font-size: 0.92rem;
+    color: #e8e8e8;
+  }
+
+  .mindmap-node-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fffacd;
+  }
+
+  .mindmap-node-latex {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    margin-top: 0.2rem;
+  }
+
+  .mindmap-node-desc {
+    color: #a8b2c8;
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+  }
+
+  .react-flow__node-default {
+    background: rgba(22, 27, 51, 0.95) !important;
+    border: 1px solid #D4AF37 !important;
+  }
+
+  .react-flow__edge-path {
+    stroke: #D4AF37 !important;
+    stroke-width: 2.5px !important;
+  }
+
+  .react-flow__handle {
+    display: none;
+  }
+</style>
+{{ end }}
