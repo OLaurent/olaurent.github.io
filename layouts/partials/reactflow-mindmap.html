@@ -18,9 +18,27 @@
 <script>
 (function() {
   function getReactFlowGlobals() {
-    const flowGlobal = window.ReactFlowCore || window.ReactFlow || null;
-    const ReactFlow = flowGlobal?.ReactFlow || flowGlobal?.default || flowGlobal;
-    const ReactFlowProvider = flowGlobal?.ReactFlowProvider || flowGlobal?.default?.ReactFlowProvider;
+    const flowCore = window.ReactFlowCore || null;
+    const flowGlobal = window.ReactFlow || null;
+    const candidates = [];
+
+    if (flowCore) candidates.push(flowCore);
+    if (flowCore?.default) candidates.push(flowCore.default);
+    if (flowGlobal) candidates.push(flowGlobal);
+    if (flowGlobal?.default) candidates.push(flowGlobal.default);
+
+    const ReactFlowProvider = candidates.find(c => c?.ReactFlowProvider)?.ReactFlowProvider;
+    let ReactFlow = candidates.find(c => typeof c?.ReactFlow === 'function')?.ReactFlow;
+    if (!ReactFlow) {
+      ReactFlow = candidates.find(c => typeof c === 'function');
+    }
+    if (!ReactFlow && flowCore?.ReactFlow) {
+      ReactFlow = flowCore.ReactFlow;
+    }
+    if (!ReactFlow && flowGlobal?.ReactFlow) {
+      ReactFlow = flowGlobal.ReactFlow;
+    }
+
     return {
       React: window.React,
       ReactDOM: window.ReactDOM,
@@ -158,6 +176,13 @@
 
   function initMindmap() {
     const globals = getReactFlowGlobals();
+    console.log('React Flow globals:', {
+      React: !!globals.React,
+      ReactDOM: !!globals.ReactDOM,
+      ReactFlow: !!globals.ReactFlow,
+      ReactFlowProvider: !!globals.ReactFlowProvider,
+      dagreLib: !!globals.dagreLib
+    });
     if (!globals.React || !globals.ReactDOM || !globals.ReactDOM.createRoot || !globals.ReactFlowProvider || !globals.ReactFlow) {
       return false;
     }
@@ -172,7 +197,7 @@
       mindmapConfig = JSON.parse(mindmapJson);
     } catch (error) {
       console.error('Mindmap JSON parsing failed:', error, mindmapJson);
-      return true;
+      return false;
     }
 
     const containerId = 'reactflow-mindmap-{{ $pageId }}';
