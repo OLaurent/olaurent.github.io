@@ -36,7 +36,10 @@ jobs:
           node-version: '20'
 
       - name: Install Dart Sass
-        run: npm install -g sass
+        run: |
+          npm install -g sass --unsafe-perm
+          chmod a+rx "$(command -v sass)"
+          sass --version
 
       - name: Install Hugo Extended
         run: |
