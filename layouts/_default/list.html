@@ -91,15 +91,15 @@
       <section class="ressources-section" aria-labelledby="eval-titre">
         <h2 class="section-titre" id="eval-titre">✍️ Espace Évaluation</h2>
         <div class="eval-list">
-          {{ range $chapitres }}
-            {{ range .Params.evaluations }}
+          {{ range $chap := $chapitres }}
+            {{ range $chap.Params.evaluations }}
             <div class="eval-item">
-              <span class="eval-chapitre">Ch.{{ $.Params.numero }}</span>
+              <span class="eval-chapitre">Ch.{{ $chap.Params.numero }}</span>
               <strong>{{ .label }}</strong>
               <div class="eval-buttons">
                 {{ with .sujet_url }}<a href="{{ . }}" class="btn-ressource btn-sujet" target="_blank" rel="noopener">📄 Sujet</a>{{ end }}
                 {{ with .corrige_url }}<a href="{{ . }}" class="btn-ressource btn-corrige" target="_blank" rel="noopener">✅ Corrigé</a>{{ end }}
-                {{ if .notes }}<a href="{{ $.RelPermalink }}#evaluations" class="btn-ressource btn-stats">📊 Stats</a>{{ end }}
+                {{ if .notes }}<a href="{{ $chap.RelPermalink }}#evaluations" class="btn-ressource btn-stats">📊 Stats</a>{{ end }}
               </div>
             </div>
             {{ end }}
