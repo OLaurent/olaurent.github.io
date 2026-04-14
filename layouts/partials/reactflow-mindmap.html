@@ -57,22 +57,28 @@
         ReactFlow = candidate.default;
         break;
       }
-      if (candidate?.default?.ReactFlow) {
+      if (candidate?.default?.ReactFlow && typeof candidate.default.ReactFlow === 'function') {
         ReactFlow = candidate.default.ReactFlow;
         break;
       }
     }
 
-    if (!ReactFlow && flowCore?.ReactFlow) {
+    if (!ReactFlow && typeof flowCore?.ReactFlow === 'function') {
       ReactFlow = flowCore.ReactFlow;
     }
-    if (!ReactFlow && flowGlobal?.ReactFlow) {
+    if (!ReactFlow && typeof flowGlobal?.ReactFlow === 'function') {
       ReactFlow = flowGlobal.ReactFlow;
     }
-    if (!ReactFlow && flowCore?.default) {
+    if (!ReactFlow && typeof flowCore?.default?.ReactFlow === 'function') {
+      ReactFlow = flowCore.default.ReactFlow;
+    }
+    if (!ReactFlow && typeof flowGlobal?.default?.ReactFlow === 'function') {
+      ReactFlow = flowGlobal.default.ReactFlow;
+    }
+    if (!ReactFlow && typeof flowCore?.default === 'function') {
       ReactFlow = flowCore.default;
     }
-    if (!ReactFlow && flowGlobal?.default) {
+    if (!ReactFlow && typeof flowGlobal?.default === 'function') {
       ReactFlow = flowGlobal.default;
     }
 
@@ -223,14 +229,30 @@
 
   function initMindmap() {
     const globals = getReactFlowGlobals();
+    let ReactFlow = globals.ReactFlow;
+
     console.log('React Flow globals:', {
       React: !!globals.React,
       ReactDOM: !!globals.ReactDOM,
-      ReactFlow: !!globals.ReactFlow,
+      ReactFlow: !!ReactFlow,
       ReactFlowProvider: !!globals.ReactFlowProvider,
-      dagreLib: !!globals.dagreLib
+      dagreLib: !!globals.dagreLib,
+      flowCore: !!globals.flowCore,
+      flowGlobal: !!globals.flowGlobal
     });
-    console.log('ReactFlow type:', typeof globals.ReactFlow, globals.ReactFlow);
+    console.log('ReactFlow type:', typeof ReactFlow, ReactFlow);
+    if (ReactFlow && typeof ReactFlow === 'object') {
+      console.log('ReactFlow object keys:', Object.keys(ReactFlow));
+      if (typeof ReactFlow.ReactFlow === 'function') {
+        console.log('Using ReactFlow.ReactFlow as component');
+        ReactFlow = ReactFlow.ReactFlow;
+      } else if (typeof ReactFlow.default?.ReactFlow === 'function') {
+        console.log('Using ReactFlow.default.ReactFlow as component');
+        ReactFlow = ReactFlow.default.ReactFlow;
+      }
+    }
+    globals.ReactFlow = ReactFlow;
+
     if (!globals.React || !globals.ReactDOM || !globals.ReactDOM.createRoot || !globals.ReactFlowProvider || !globals.ReactFlow) {
       return false;
     }
