@@ -36,12 +36,6 @@ evaluations:
 coin_expert:
   - label: "Lien d'approfondissement"
     url: "https://..."
-
-carte_mentale:
-  - "Intégrale définie = aire signée sous la courbe entre a et b."
-  - "Si f ≥ 0 sur [a,b], la valeur de l'intégrale correspond à l'aire positive."
-  - "La primitive F vérifie F' = f et ∫_a^b f = F(b) - F(a)."
-  - "Les changements de variable et l'intégration par parties sont des outils clés."
 ---
 
 ## Ce que ce chapitre travaille
@@ -50,6 +44,16 @@ carte_mentale:
 - Définition de $F_a(x)=\int_a^x f(t)\,dt$ et lien avec la primitive.
 - Relation $\int_a^b f(x)\,dx = F(b)-F(a)$.
 - Intégrale signée pour les fonctions de signe quelconque.
+
+## Carte mentale
+
+{{< mindmap 1 >}}
+# Calcul intégral
+- Intégrale définie = aire signée sous la courbe entre a et b.
+- Si $f \ge 0$ sur $[a,b]$, l'intégrale correspond à une aire positive.
+- La primitive $F$ vérifie $F' = f$ et $\int_a^b f = F(b) - F(a)$.
+- Changement de variable et intégration par parties.
+{{< /mindmap >}}
 
 ## Rappels utiles
 

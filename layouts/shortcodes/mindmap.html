@@ -1,0 +1,56 @@
+<div class="oxl-mindmap-container">
+  <svg id="mindmap-{{ .Get 0 | default "1" }}" class="markmap"></svg>
+  <script type="text/markdown">
+{{ .Inner | safeHTML }}
+  </script>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
+<style>
+  .oxl-mindmap-container {
+    width: 100%;
+    height: 500px;
+    background: radial-gradient(circle, #161B33 0%, #080A12 100%);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    margin: 20px 0;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .markmap {
+    width: 100%;
+    height: 100%;
+  }
+  .markmap div {
+    color: #e0e0e0 !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 300 !important;
+  }
+  .markmap path {
+    stroke: #D4AF37 !important;
+    stroke-width: 2px !important;
+    opacity: 0.8;
+  }
+  .markmap circle {
+    fill: #FFFACD !important;
+    stroke: #D4AF37 !important;
+    stroke-width: 1px;
+  }
+  .markmap path {
+    filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.4));
+    transition: stroke-width 0.3s ease;
+  }
+  .markmap g:hover path {
+    stroke-width: 4px !important;
+    stroke: #FFFACD !important;
+    filter: drop-shadow(0 0 5px rgba(255, 250, 205, 0.8));
+  }
+  .markmap-node-depth-0 > g > foreignObject div {
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #FFFACD !important;
+    border-bottom: 2px solid #D4AF37;
+    padding-bottom: 5px;
+  }
+</style>
