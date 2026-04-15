@@ -52,43 +52,98 @@
     function resolveReactFlow(candidate) {
       if (!candidate) return null;
 
-      // direct function export
-      if (typeof candidate === 'function') return candidate;
-
-      // common named exports
-      if (typeof candidate.ReactFlow === 'function') return candidate.ReactFlow;
-      if (typeof candidate.ReactFlow?.default === 'function') return candidate.ReactFlow.default;
-      if (typeof candidate.default === 'function') return candidate.default;
-      if (typeof candidate.default?.ReactFlow === 'function') return candidate.default.ReactFlow;
-      if (typeof candidate.default?.default === 'function') return candidate.default.default;
-      if (typeof candidate.default?.default?.ReactFlow === 'function') return candidate.default.default.ReactFlow;
-
-      // Prefer explicit keys if present
-      const prefer = ['ReactFlow', 'default', 'Flow', 'GraphView'];
-      for (const k of prefer) {
-        try {
-          const v = candidate[k];
-          if (typeof v === 'function') return v;
-          if (v && typeof v.default === 'function') return v.default;
-          if (v && typeof v.ReactFlow === 'function') return v.ReactFlow;
-        } catch (e) {
-          // ignore access errors
-        }
-      }
-
-      // Fallback: scan object properties and pick first plausible function export
+      // Helpful debug: show candidate type and a few keys when available
       try {
-        for (const k of Object.keys(candidate)) {
-          const v = candidate[k];
-          if (typeof v === 'function') {
-            if (k.toLowerCase().includes('provider')) continue; // avoid picking provider
-            return v;
-          }
-          if (v && typeof v.default === 'function') return v.default;
+        const kind = typeof candidate;
+        if (kind === 'function') {
+          console.debug('resolveReactFlow: candidate is function, name=', candidate.name || '(anonymous)');
+        } else if (kind === 'object') {
+          try { console.debug('resolveReactFlow: candidate keys=', Object.keys(candidate).slice(0,40)); } catch (e) {}
         }
       } catch (e) {
         // ignore
       }
+
+      // Prefer explicit properties that should hold the top-level component
+      if (candidate?.ReactFlow && typeof candidate.ReactFlow === 'function') {
+        console.debug('resolveReactFlow: using candidate.ReactFlow');
+        return candidate.ReactFlow;
+      }
+      if (candidate?.default?.ReactFlow && typeof candidate.default.ReactFlow === 'function') {
+        console.debug('resolveReactFlow: using candidate.default.ReactFlow');
+        return candidate.default.ReactFlow;
+      }
+
+      // If candidate.default is itself the component
+      if (typeof candidate.default === 'function' && /reactflow|react-flow|graphview|flow/i.test(candidate.default.name || '')) {
+        console.debug('resolveReactFlow: using candidate.default (function) name=', candidate.default.name);
+        return candidate.default;
+      }
+
+      // If there is an explicit 'default' function export, prefer it only if it looks like ReactFlow
+      if (typeof candidate === 'object' && typeof candidate.default === 'function') {
+        // check string content for clues (cheap heuristic)
+        try {
+          const src = String(candidate.default);
+          if (/reactflow|react-flow|ReactFlow|GraphView/.test(src)) {
+            console.debug('resolveReactFlow: using candidate.default (heuristic match)');
+            return candidate.default;
+          }
+        } catch (e) {}
+      }
+
+      // Look for a property explicitly named 'ReactFlow' (case-insensitive)
+      try {
+        for (const k of Object.keys(candidate)) {
+          if (k.toLowerCase() === 'reactflow' && typeof candidate[k] === 'function') {
+            console.debug('resolveReactFlow: found property', k);
+            return candidate[k];
+          }
+        }
+      } catch (e) {}
+
+      // Helper: heuristics to recognize the main ReactFlow component vs smaller exports
+      function looksLikeMainReactFlowFunction(fn) {
+        if (typeof fn !== 'function') return false;
+        try {
+          const src = String(fn);
+          // Negative markers (edge/render helpers) -> reject
+          if (/react-flow__edge-path|getMarkerEnd|getBezierPath|BaseEdge|EdgeWrapper|EdgeLabelRenderer|SmoothStepEdge|BezierEdge/i.test(src)) {
+            return false;
+          }
+          // Positive markers for the main wrapper/component -> accept
+          if (/react-flow__wrapper|react-flow__viewport|react-flow__nodes|react-flow__renderer|ReactFlowProvider|fitViewOnInit|nodesDraggable|edgesUpdatable|react-flow__edgelabel-renderer/i.test(src)) {
+            return true;
+          }
+          // fallback by name
+          const name = fn.name || '';
+          if (/reactflow|react-flow|graphview|flow/i.test(name)) return true;
+        } catch (e) {
+          // ignore
+        }
+        return false;
+      }
+
+      // As a last resort, accept a raw function candidate only if heuristics indicate it's the main component
+      if (typeof candidate === 'function') {
+        if (looksLikeMainReactFlowFunction(candidate)) {
+          console.debug('resolveReactFlow: accepting function candidate by heuristic name/source', candidate.name || '(anonymous)');
+          return candidate;
+        }
+      }
+
+      // Final fallback: scan for first plausible function export that is not a provider and that passes heuristics
+      try {
+        for (const k of Object.keys(candidate)) {
+          const v = candidate[k];
+          if (typeof v === 'function' && !k.toLowerCase().includes('provider') && !k.toLowerCase().includes('context')) {
+            if (looksLikeMainReactFlowFunction(v)) {
+              console.debug('resolveReactFlow: fallback pick (heuristic) ', k);
+              return v;
+            }
+          }
+        }
+      } catch (e) {}
 
       return null;
     }
