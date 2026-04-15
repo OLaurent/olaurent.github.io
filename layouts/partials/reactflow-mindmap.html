@@ -12,17 +12,14 @@
 
 <link rel="stylesheet" href="https://unpkg.com/@reactflow/core@11.11.4/dist/style.css">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom-client.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script>
-  // Compatibility: some UMD builds expose createRoot on ReactDOMClient.
-  // Map it to ReactDOM.createRoot so the inline initializer finds it.
-  if (window.ReactDOM && !window.ReactDOM.createRoot && window.ReactDOMClient && typeof window.ReactDOMClient.createRoot === 'function') {
-    window.ReactDOM.createRoot = window.ReactDOMClient.createRoot;
-  }
-  if (!window.ReactDOM && window.ReactDOMClient && window.ReactDOMClient.default) {
-    window.ReactDOM = window.ReactDOM || {};
-    if (!window.ReactDOM.createRoot && typeof window.ReactDOMClient.default.createRoot === 'function') {
-      window.ReactDOM.createRoot = window.ReactDOMClient.default.createRoot;
+  // Fallback: if a separate ReactDOMClient UMD is available on the page,
+  // map its createRoot to window.ReactDOM.createRoot without overriding.
+  if (window.ReactDOMClient && typeof window.ReactDOMClient.createRoot === 'function') {
+    window.ReactDOM = window.ReactDOM || window.ReactDOMClient.default || window.ReactDOM;
+    if (!window.ReactDOM.createRoot) {
+      window.ReactDOM.createRoot = window.ReactDOMClient.createRoot;
     }
   }
 </script>
