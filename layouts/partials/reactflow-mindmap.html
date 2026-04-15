@@ -130,107 +130,80 @@
           console.debug('resolveReactFlow: accepting function candidate by heuristic name/source', candidate.name || '(anonymous)');
           return candidate;
         }
-      }
-
-      // Final fallback: scan for first plausible function export that is not a provider and that passes heuristics
-      try {
-        for (const k of Object.keys(candidate)) {
-          const v = candidate[k];
-          if (typeof v === 'function' && !k.toLowerCase().includes('provider') && !k.toLowerCase().includes('context')) {
-            if (looksLikeMainReactFlowFunction(v)) {
-              console.debug('resolveReactFlow: fallback pick (heuristic) ', k);
-              return v;
-            }
-          }
-        }
-      } catch (e) {}
-
-      return null;
-    }
-
-    let ReactFlow = null;
-    for (const candidate of candidates) {
-      const resolved = resolveReactFlow(candidate);
-      if (resolved) {
-        ReactFlow = resolved;
-        break;
-      }
-    }
-
-    if (!ReactFlow) {
-      ReactFlow = resolveReactFlow(flowCore) || resolveReactFlow(flowGlobal) || resolveReactFlow(flowCoreDefault) || resolveReactFlow(flowGlobalDefault);
-    }
-
-    return {
-      React: window.React,
-      ReactDOM: window.ReactDOM,
-      ReactFlow,
-      ReactFlowProvider,
-      dagreLib: window.dagre,
-      flowCore,
-      flowGlobal,
-      flowCoreDefault,
-      flowGlobalDefault,
-      candidates
-    };
-  }
-
-  function createMindmap(container, mindmapConfig, globals) {
-    const { React, ReactDOM, ReactFlow, ReactFlowProvider, dagreLib } = globals;
-    const nodeWidth = 260;
-    const nodeHeight = 100;
-    const defaultNodeStyle = {
-      background: 'rgba(22, 27, 51, 0.95)',
-      color: '#FFFACD',
-      border: '1px solid #D4AF37',
-      borderRadius: '12px',
-      boxShadow: '0 18px 40px rgba(0,0,0,0.3)',
-      width: nodeWidth,
-      padding: '0'
-    };
-
-    function escapeHtml(str) {
-      if (typeof str !== 'string') return '';
-      return str.replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function buildLabelHtml(node) {
-      const title = `<div class="mindmap-node-title">${escapeHtml(node.label || node.title || '')}</div>`;
-      const latex = node.latex ? `<div class="mindmap-node-latex">\\(${escapeHtml(node.latex)}\\)</div>` : '';
-      const description = node.description ? `<div class="mindmap-node-desc">${escapeHtml(node.description)}</div>` : '';
-      return `${title}${latex}${description}`;
-    }
-
-    function createNode(node, parentId) {
-      const id = node.id || `${parentId || 'root'}-${Math.random().toString(36).slice(2, 8)}`;
-      return {
-        id,
-        data: {
-          label: React.createElement('div', { className: 'reactflow-node-label', dangerouslySetInnerHTML: { __html: buildLabelHtml(node) } })
-        },
-        position: { x: 0, y: 0 },
-        style: Object.assign({}, defaultNodeStyle, node.style || {}),
-        sourcePosition: 'bottom',
-        targetPosition: 'top'
-      };
-    }
-
-    function walkTree(node, parentId = null, all = { nodes: [], edges: [] }) {
-      const id = node.id || `node-${Math.random().toString(36).slice(2, 8)}`;
-      const flowNode = createNode(Object.assign({}, node, { id }), parentId);
-      all.nodes.push(flowNode);
-      if (parentId) {
-        all.edges.push({
-          id: `e-${parentId}-${id}`,
+                if (!candidate) return null;
           source: parentId,
+                function isLikelyReactFlow(fn) {
+                  if (typeof fn !== 'function') return false;
+                  try {
+                    if (fn.displayName && String(fn.displayName).toLowerCase().includes('reactflow')) return true;
+                    if (fn.name && String(fn.name).toLowerCase().includes('reactflow')) return true;
+                    const src = fn.toString();
+                    // indicators that look like the main ReactFlow component
+                    const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'react-flow__', 'ReactFlowProvider'];
+                    if (indicators.some(s => src.indexOf(s) !== -1)) return true;
+                    // explicit reject common small edge/node renderers (id,path,labelX signature)
+                    if (/\bid[, ]*path[, ]*labelX\b/.test(src)) return false;
+                  } catch (e) {
+                    // ignore
+                  }
+                  return false;
+                }
           target: id,
+                // If there is a direct `ReactFlow` export and it *looks* like the main component, accept it.
+                try {
+                  if (typeof candidate.ReactFlow === 'function' && isLikelyReactFlow(candidate.ReactFlow)) {
+                    console.debug('resolveReactFlow: using candidate.ReactFlow');
+                    return candidate.ReactFlow;
+                  }
+                  if (candidate.default && typeof candidate.default.ReactFlow === 'function' && isLikelyReactFlow(candidate.default.ReactFlow)) {
+                    console.debug('resolveReactFlow: using candidate.default.ReactFlow');
+                    return candidate.default.ReactFlow;
+                  }
+                  if (typeof candidate.default === 'function' && isLikelyReactFlow(candidate.default)) {
+                    console.debug('resolveReactFlow: using candidate.default (function)');
+                    return candidate.default;
+                  }
+                } catch (e) {
+                  // access errors ignored
+                }
           animated: node.animated === true,
+                // Prefer explicit keys if present and likely
+                const prefer = ['ReactFlow', 'default', 'Flow', 'GraphView'];
+                for (const k of prefer) {
+                  try {
+                    const v = candidate[k];
+                    if (isLikelyReactFlow(v)) {
+                      console.debug('resolveReactFlow: using prefer key', k);
+                      return v;
+                    }
+                    if (v && typeof v.default === 'function' && isLikelyReactFlow(v.default)) {
+                      console.debug('resolveReactFlow: using prefer key default of', k);
+                      return v.default;
+                    }
+                  } catch (e) {}
+                }
           style: { stroke: '#D4AF37', strokeWidth: 2.5 }
+                // Fallback scanning: pick the first function export that *looks like* the main component.
+                try {
+                  for (const k of Object.keys(candidate)) {
+                    const v = candidate[k];
+                    if (isLikelyReactFlow(v)) {
+                      console.debug('resolveReactFlow: fallback found likely ReactFlow at key', k);
+                      return v;
+                    }
+                  }
+                  // last resort: any function (but avoid small edge renderers)
+                  for (const k of Object.keys(candidate)) {
+                    const v = candidate[k];
+                    if (typeof v === 'function' && !/\bid[, ]*path[, ]*labelX\b/.test(String(v))) {
+                      console.debug('resolveReactFlow: fallback any function at key', k);
+                      return v;
+                    }
+                    if (v && typeof v.default === 'function') return v.default;
+                  }
+                } catch (e) {}
         });
+                return null;
       }
       if (Array.isArray(node.children)) {
         node.children.forEach(child => walkTree(child, id, all));
