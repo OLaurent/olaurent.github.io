@@ -57,8 +57,7 @@
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
           <a href="{{ .url }}" class="btn-ressource btn-cours glightbox"
-             data-type="iframe" data-width="90%" data-height="90vh"
-             target="_blank" rel="noopener">
+             data-type="iframe" data-width="90%" data-height="90vh">
             Ouvrir
           </a>
         </div>
@@ -75,8 +74,7 @@
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
           <a href="{{ .url }}" class="btn-ressource btn-exos glightbox"
-             data-type="iframe" data-width="90%" data-height="90vh"
-             target="_blank" rel="noopener">
+             data-type="iframe" data-width="90%" data-height="90vh">
             Ouvrir
           </a>
         </div>
@@ -93,8 +91,7 @@
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
           <a href="{{ .url }}" class="btn-ressource btn-corrige glightbox"
-             data-type="iframe" data-width="90%" data-height="90vh"
-             target="_blank" rel="noopener">
+             data-type="iframe" data-width="90%" data-height="90vh">
             Ouvrir
           </a>
         </div>
@@ -163,15 +160,13 @@
       <div class="eval-buttons">
         {{ with .sujet_url }}
         <a href="{{ . }}" class="btn-ressource btn-sujet glightbox"
-           data-type="iframe" data-width="90%" data-height="90vh"
-           target="_blank" rel="noopener">
+           data-type="iframe" data-width="90%" data-height="90vh">
           📄 Sujet
         </a>
         {{ end }}
         {{ with .corrige_url }}
         <a href="{{ . }}" class="btn-ressource btn-corrige glightbox"
-           data-type="iframe" data-width="90%" data-height="90vh"
-           target="_blank" rel="noopener">
+           data-type="iframe" data-width="90%" data-height="90vh">
           ✅ Corrigé
         </a>
         {{ end }}
