@@ -189,6 +189,19 @@
       return null;
     }
 
+    // Resolve top-level ReactFlow candidate and return runtime globals
+    const resolvedReactFlowCandidate = resolveReactFlow(flowCore) || resolveReactFlow(flowCoreDefault) || resolveReactFlow(flowGlobal) || resolveReactFlow(flowGlobalDefault) || flowCore?.ReactFlow || flowGlobal?.ReactFlow || null;
+    const dagreLib = window.dagre || window.dagreLib || null;
+    const React = window.React || null;
+    const ReactDOM = window.ReactDOM || null;
+    const ReactFlow = resolvedReactFlowCandidate;
+
+    return { React, ReactDOM, ReactFlow, ReactFlowProvider, dagreLib, flowCore, flowGlobal };
+  }
+
+  // createMindmap: builds nodes/edges and mounts React Flow into the container
+  function createMindmap(container, mindmapConfig, globals) {
+
     // Walk the provided mindmap tree and build nodes/edges arrays suitable for layout
     function walkTree(node, parentId = null, all = { nodes: [], edges: [] }) {
       if (!node) return all;
