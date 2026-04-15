@@ -8,7 +8,7 @@ description: "Intégrales définies et aires sous la courbe."
 documents:
   - label: "Cours complet"
     type: cours
-    url: "/assets/pdf/terminale-specialite/TEDS11 - Calcul Integral/Cours/TEDS11 - Calcul intégral - Cours.pdf"
+    url: "/assets/pdf/terminale-specialite/TEDS11 - Calcul Integral/Cours/TEDS11 - Calcul integral - Cours.pdf"
   - label: "Exercices"
     type: exercices
     url: "/assets/pdf/seconde/ch05-exos.pdf"

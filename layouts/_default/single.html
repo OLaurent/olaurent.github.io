@@ -56,9 +56,8 @@
         {{ range $cours }}
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
-          <a href="{{ .url }}" class="btn-ressource btn-cours glightbox"
-             data-type="iframe" data-width="90%" data-height="90vh"
-             target="_blank" rel="noopener">
+          <a href="{{ .url }}" class="btn-ressource btn-cours"
+             target="_blank" rel="noopener noreferrer">
             Ouvrir
           </a>
         </div>
@@ -74,9 +73,8 @@
         {{ range $exercices }}
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
-          <a href="{{ .url }}" class="btn-ressource btn-exos glightbox"
-             data-type="iframe" data-width="90%" data-height="90vh"
-             target="_blank" rel="noopener">
+          <a href="{{ .url }}" class="btn-ressource btn-exos"
+             target="_blank" rel="noopener noreferrer">
             Ouvrir
           </a>
         </div>
@@ -92,9 +90,8 @@
         {{ range $corriges }}
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
-          <a href="{{ .url }}" class="btn-ressource btn-corrige glightbox"
-             data-type="iframe" data-width="90%" data-height="90vh"
-             target="_blank" rel="noopener">
+          <a href="{{ .url }}" class="btn-ressource btn-corrige"
+             target="_blank" rel="noopener noreferrer">
             Ouvrir
           </a>
         </div>
@@ -162,16 +159,14 @@
       <h3 class="eval-titre">{{ .label }}</h3>
       <div class="eval-buttons">
         {{ with .sujet_url }}
-        <a href="{{ . }}" class="btn-ressource btn-sujet glightbox"
-           data-type="iframe" data-width="90%" data-height="90vh"
-           target="_blank" rel="noopener">
+        <a href="{{ . }}" class="btn-ressource btn-sujet"
+           target="_blank" rel="noopener noreferrer">
           📄 Sujet
         </a>
         {{ end }}
         {{ with .corrige_url }}
-        <a href="{{ . }}" class="btn-ressource btn-corrige glightbox"
-           data-type="iframe" data-width="90%" data-height="90vh"
-           target="_blank" rel="noopener">
+        <a href="{{ . }}" class="btn-ressource btn-corrige"
+           target="_blank" rel="noopener noreferrer">
           ✅ Corrigé
         </a>
         {{ end }}
