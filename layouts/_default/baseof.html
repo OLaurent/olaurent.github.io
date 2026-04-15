@@ -20,6 +20,105 @@
     const lightbox = GLightbox({ touchNavigation: true, loop: false, autoplayVideos: true });
   </script>
 
+  <div id="pdf-modal" class="pdf-modal" aria-hidden="true">
+    <div class="pdf-modal-backdrop" data-pdf-close></div>
+    <div class="pdf-modal-content" role="dialog" aria-modal="true" aria-label="Aperçu du document PDF">
+      <button type="button" class="pdf-modal-close" data-pdf-close aria-label="Fermer">×</button>
+      <iframe id="pdf-modal-frame" class="pdf-modal-frame" src="" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+  <style>
+    .pdf-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 1rem;
+    }
+    .pdf-modal[aria-hidden="false"] {
+      display: flex;
+    }
+    .pdf-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      cursor: zoom-out;
+    }
+    .pdf-modal-content {
+      position: relative;
+      width: min(100%, 1200px);
+      height: min(100%, 90vh);
+      background: #111;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+      z-index: 1;
+    }
+    .pdf-modal-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: none;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.55);
+      color: #ffffff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .pdf-modal-close:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .pdf-modal-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #111;
+    }
+  </style>
+  <script>
+    (function () {
+      const modal = document.getElementById('pdf-modal');
+      const frame = document.getElementById('pdf-modal-frame');
+      const closeButtons = modal.querySelectorAll('[data-pdf-close]');
+      const html = document.documentElement;
+
+      const openModal = (url) => {
+        if (!url) return;
+        frame.src = url;
+        modal.setAttribute('aria-hidden', 'false');
+        html.style.overflow = 'hidden';
+      };
+
+      const closeModal = () => {
+        modal.setAttribute('aria-hidden', 'true');
+        frame.src = '';
+        html.style.overflow = '';
+      };
+
+      closeButtons.forEach((button) => {
+        button.addEventListener('click', closeModal);
+      });
+
+      document.addEventListener('click', (event) => {
+        const link = event.target.closest('a[data-pdf-modal]');
+        if (!link) return;
+        event.preventDefault();
+        openModal(link.href);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+
   {{/* Focus mode & Stats JS */}}
   {{ $focusJs := resources.Get "js/focus.js" | minify }}
   <script src="{{ $focusJs.RelPermalink }}"></script>

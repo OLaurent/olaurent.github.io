@@ -56,7 +56,8 @@
         {{ range $cours }}
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
-          <a href="{{ .url }}" class="btn-ressource btn-cours glightbox"
+          <a href="{{ .url }}" class="btn-ressource btn-cours"
+             data-pdf-modal
              data-type="iframe" data-width="90%" data-height="90vh">
             Ouvrir
           </a>
@@ -73,7 +74,8 @@
         {{ range $exercices }}
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
-          <a href="{{ .url }}" class="btn-ressource btn-exos glightbox"
+          <a href="{{ .url }}" class="btn-ressource btn-exos"
+             data-pdf-modal
              data-type="iframe" data-width="90%" data-height="90vh">
             Ouvrir
           </a>
@@ -90,7 +92,8 @@
         {{ range $corriges }}
         <div class="doc-card">
           <span class="doc-label">{{ .label }}</span>
-          <a href="{{ .url }}" class="btn-ressource btn-corrige glightbox"
+          <a href="{{ .url }}" class="btn-ressource btn-corrige"
+             data-pdf-modal
              data-type="iframe" data-width="90%" data-height="90vh">
             Ouvrir
           </a>
@@ -159,13 +162,15 @@
       <h3 class="eval-titre">{{ .label }}</h3>
       <div class="eval-buttons">
         {{ with .sujet_url }}
-        <a href="{{ . }}" class="btn-ressource btn-sujet glightbox"
+        <a href="{{ . }}" class="btn-ressource btn-sujet"
+           data-pdf-modal
            data-type="iframe" data-width="90%" data-height="90vh">
           📄 Sujet
         </a>
         {{ end }}
         {{ with .corrige_url }}
-        <a href="{{ . }}" class="btn-ressource btn-corrige glightbox"
+        <a href="{{ . }}" class="btn-ressource btn-corrige"
+           data-pdf-modal
            data-type="iframe" data-width="90%" data-height="90vh">
           ✅ Corrigé
         </a>
