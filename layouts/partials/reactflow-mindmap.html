@@ -303,7 +303,24 @@
     const dagreLib = window.dagre || window.dagreLib || null;
     const React = window.React || null;
     const ReactDOM = window.ReactDOM || null;
-    const ReactFlow = finalReactFlow;
+    let ReactFlow = finalReactFlow;
+
+    try {
+      if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
+        ReactFlow = window.ReactFlowCore.ReactFlow;
+        ReactFlowProvider = window.ReactFlowCore.ReactFlowProvider || ReactFlowProvider;
+        console.debug('getReactFlowGlobals: canonical override to window.ReactFlowCore.ReactFlow');
+      } else if (window.ReactFlow && typeof window.ReactFlow.ReactFlow === 'function') {
+        ReactFlow = window.ReactFlow.ReactFlow;
+        ReactFlowProvider = window.ReactFlow.ReactFlowProvider || ReactFlowProvider;
+        console.debug('getReactFlowGlobals: canonical override to window.ReactFlow.ReactFlow');
+      } else if (typeof window.ReactFlow === 'function') {
+        ReactFlow = window.ReactFlow;
+        console.debug('getReactFlowGlobals: canonical override to window.ReactFlow function');
+      }
+    } catch (e) {
+      console.debug('getReactFlowGlobals: canonical override check failed', e);
+    }
 
     return { React, ReactDOM, ReactFlow, ReactFlowProvider, dagreLib, flowCore, flowGlobal };
   }
@@ -703,6 +720,14 @@
   function initMindmap() {
     const globals = getReactFlowGlobals();
     let ReactFlow = globals.ReactFlow;
+
+    if (window.ReactFlowCore?.ReactFlow) {
+      ReactFlow = window.ReactFlowCore.ReactFlow;
+      console.debug('initMindmap: preferring window.ReactFlowCore.ReactFlow');
+    } else if (window.ReactFlow?.ReactFlow) {
+      ReactFlow = window.ReactFlow.ReactFlow;
+      console.debug('initMindmap: preferring window.ReactFlow.ReactFlow');
+    }
 
     console.log('React Flow globals:', {
       React: !!globals.React,
