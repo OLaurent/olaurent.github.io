@@ -45,22 +45,7 @@ mindmap:
     description: "Comprendre le lien entre primitive, intégrale et aire."
     children:
       - label: "Primitives"
-        latex: "F'(x)=f(x)"
-        description: "F' est la fonction dérivée de F."
-      - label: "Intégrale définie"
-        latex: "\\int_a^b f(x) \\, dx"
-        children:
-          - label: "Aire signée"
-            description: "L'aire est positive si f ≥ 0."
-          - label: "Relation fondamentale"
-            latex: "F(b)-F(a)"
-            description: "Lien avec la primitive."
-      - label: "Propriétés"
-        children:
-          - label: "Linéarité"
-            description: "\"∫(f+g)=∫f+∫g\""
-          - label: "Changement de variable"
-            description: "Technique très utilisée."
+      - label: "Changement de variable"
 ---
 
 ## Ce que ce chapitre travaille
