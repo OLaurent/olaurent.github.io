@@ -228,8 +228,8 @@
       // Fallback scanning: pick the first function export that looks like the main component
       try {
         for (const k of Object.keys(candidate)) {
-          // skip obvious edge/node helpers or providers by key name
-          if (/(edge|bezier|label|baseedge|edgelabelrenderer|provider|panel)/i.test(k)) continue;
+          // skip obvious edge/node helpers, providers, panels or utility-like keys by key name
+          if (/(edge|bezier|label|baseedge|edgelabelrenderer|provider|panel|apply|update|change|changes|getrectofnodes|getnodesbounds|getrect|getnodes|applynodechanges)/i.test(k)) continue;
           const v = candidate[k];
           if (typeof v === 'function') {
             // skip provider-like functions or explicit edge renderers
@@ -248,7 +248,7 @@
         }
         // last resort: any non-edge function (skip keys that look like edges)
         for (const k of Object.keys(candidate)) {
-          if (/(edge|bezier|label|baseedge|edgelabelrenderer|provider|panel)/i.test(k)) continue;
+          if (/(edge|bezier|label|baseedge|edgelabelrenderer|provider|panel|apply|update|change|changes|getrectofnodes|getnodesbounds|getrect|getnodes|applynodechanges)/i.test(k)) continue;
           const v = candidate[k];
           if (typeof v === 'function') {
             if (isProviderFunction(v) || isUtilityFunction(v)) continue;
@@ -319,13 +319,16 @@
     const nodeWidth = (mindmapConfig && mindmapConfig.nodeWidth) || 220;
     const nodeHeight = (mindmapConfig && mindmapConfig.nodeHeight) || 80;
 
-    // Strong canonical-first selection: prefer UMD globals (window.ReactFlowCore, window.ReactFlow)
-    // before running heuristics on module objects. This avoids selecting small helper
-    // functions that happen to be the first function export (e.g. applyNodeChanges).
+    // Prefer the final resolved candidate from getReactFlowGlobals first
+    // (it already applies heuristics). Only if not available, fall back
+    // to canonical UMD globals and then scan module objects.
     let ReactFlowComp = null;
     let chosenModule = null;
     try {
-      if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
+      if (globals.ReactFlow && typeof globals.ReactFlow === 'function') {
+        ReactFlowComp = globals.ReactFlow;
+        console.debug('createMindmap: using globals.ReactFlow (function)');
+      } else if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
         ReactFlowComp = window.ReactFlowCore.ReactFlow;
         if (!ReactFlowProvider && typeof window.ReactFlowCore.ReactFlowProvider === 'function') {
           ReactFlowProvider = window.ReactFlowCore.ReactFlowProvider;
@@ -346,9 +349,6 @@
           ReactFlowProvider = globals.flowCore.ReactFlowProvider;
         }
         console.debug('createMindmap: canonical pick globals.flowCore.ReactFlow');
-      } else if (globals.ReactFlow && typeof globals.ReactFlow === 'function') {
-        ReactFlowComp = globals.ReactFlow;
-        console.debug('createMindmap: using globals.ReactFlow (function)');
       } else {
         // fall back to scanning known module objects
         if (window.ReactFlowCore && (window.ReactFlowCore.ReactFlow || window.ReactFlowCore.default)) {
@@ -359,7 +359,7 @@
           chosenModule = globals.flowCore;
         } else if (globals.flowGlobal && (globals.flowGlobal.ReactFlow || globals.flowGlobal.default)) {
           chosenModule = globals.flowGlobal;
-        } else if (globals.ReactFlow && (typeof globals.ReactFlow === 'function' || globals.ReactFlow.ReactFlow || globals.ReactFlow.default)) {
+        } else if (globals.ReactFlow) {
           if (typeof globals.ReactFlow === 'function') {
             ReactFlowComp = globals.ReactFlow;
           } else {
