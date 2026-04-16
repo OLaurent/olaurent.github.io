@@ -326,9 +326,53 @@
     } catch (e) {}
 
     if (chosenModule) {
-      ReactFlowComp = chosenModule.ReactFlow || chosenModule.default || (typeof chosenModule === 'function' ? chosenModule : null);
-      if (chosenModule.ReactFlowProvider) ReactFlowProvider = chosenModule.ReactFlowProvider;
-      else if (chosenModule.default && chosenModule.default.ReactFlowProvider) ReactFlowProvider = chosenModule.default.ReactFlowProvider;
+      // Try to unwrap a real ReactFlow component function from the chosen module.
+      function localIsProviderFunction(fn) {
+        if (typeof fn !== 'function') return false;
+        try {
+          const s = String(fn);
+          return /\bchildren\b/.test(s) && /\bvalue\b/.test(s);
+        } catch (e) { return false; }
+      }
+      function localIsEdgeRenderer(fn) {
+        if (typeof fn !== 'function') return false;
+        try { return /labelX|labelY|markerEnd|markerStart|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge|SmoothStepEdge|StepEdge|StraightEdge|interactionWidth/i.test(String(fn)); } catch (e) { return false; }
+      }
+      function localIsLikelyReactFlow(fn) {
+        if (typeof fn !== 'function') return false;
+        try {
+          const name = fn.name || fn.displayName || '';
+          if (/reactflow|react-flow|graphview|flow/i.test(name)) return true;
+          const src = String(fn);
+          const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'fitViewOnInit'];
+          if (indicators.some(s => src.indexOf(s) !== -1)) return true;
+        } catch (e) {}
+        return false;
+      }
+
+      let comp = null;
+      if (typeof chosenModule.ReactFlow === 'function') comp = chosenModule.ReactFlow;
+      else if (chosenModule.default && typeof chosenModule.default === 'function') comp = chosenModule.default;
+      else if (typeof chosenModule === 'function') comp = chosenModule;
+      else {
+        // scan module properties for a likely component (avoid providers/panels/edges)
+        try {
+          for (const k of Object.keys(chosenModule)) {
+            const v = chosenModule[k];
+            if (typeof v === 'function' && !localIsProviderFunction(v) && !localIsEdgeRenderer(v) && localIsLikelyReactFlow(v)) {
+              comp = v;
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // fallback: accept module.ReactFlow even if not function (will be unwrapped later)
+      if (!comp && typeof chosenModule.ReactFlow !== 'undefined') comp = chosenModule.ReactFlow;
+
+      ReactFlowComp = comp;
+      if (chosenModule.ReactFlowProvider && typeof chosenModule.ReactFlowProvider === 'function') ReactFlowProvider = chosenModule.ReactFlowProvider;
+      else if (chosenModule.default && chosenModule.default.ReactFlowProvider && typeof chosenModule.default.ReactFlowProvider === 'function') ReactFlowProvider = chosenModule.default.ReactFlowProvider;
     }
 
     if (!ReactFlowComp && typeof window.ReactFlow === 'function') ReactFlowComp = window.ReactFlow;
