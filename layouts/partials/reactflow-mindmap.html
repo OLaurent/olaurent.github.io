@@ -530,7 +530,7 @@
         return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
-      const title = node.title || node.name || '';
+      const title = node.label || node.title || node.name || '';
       const desc = node.desc || node.description || '';
       const latex = node.latex || node.tex || '';
 
