@@ -41,19 +41,20 @@
     ].filter(Boolean);
 
     // Prefer explicit `ReactFlow` export found on candidate modules before running heuristics
+    // Store the module object (not individual property functions) so later code can unwrap safely
     let explicitReactFlowFromCandidates = null;
     for (const c of candidates) {
       try {
         if (c && typeof c.ReactFlow === 'function') {
-          explicitReactFlowFromCandidates = c.ReactFlow;
+          explicitReactFlowFromCandidates = c; // keep module object
           break;
         }
         if (c && c.default && typeof c.default.ReactFlow === 'function') {
-          explicitReactFlowFromCandidates = c.default.ReactFlow;
+          explicitReactFlowFromCandidates = c.default; // keep module object
           break;
         }
         if (c && typeof c.default === 'function' && /reactflow|ReactFlow/i.test(String(c.default))) {
-          explicitReactFlowFromCandidates = c.default;
+          explicitReactFlowFromCandidates = c.default; // also keep default function as module-like
           break;
         }
       } catch (e) {}
@@ -84,18 +85,19 @@
       }
 
       // Prefer explicit properties that should hold the top-level component
+      // Return the module object itself so the caller can choose the correct export (safer than returning provider functions)
       if (candidate?.ReactFlow && typeof candidate.ReactFlow === 'function') {
-        console.debug('resolveReactFlow: using candidate.ReactFlow');
-        return candidate.ReactFlow;
+        console.debug('resolveReactFlow: using candidate module (has ReactFlow)');
+        return candidate;
       }
-      // If ReactFlow property is present but wrapped (e.g. { default: fn }), unwrap it
+      // If ReactFlow property is present under candidate.ReactFlow.default, return candidate.ReactFlow (module-like) or candidate.default
       if (candidate?.ReactFlow && candidate.ReactFlow?.default && typeof candidate.ReactFlow.default === 'function') {
-        console.debug('resolveReactFlow: using candidate.ReactFlow.default');
-        return candidate.ReactFlow.default;
+        console.debug('resolveReactFlow: using candidate module (ReactFlow.default)');
+        return candidate;
       }
       if (candidate?.default?.ReactFlow && typeof candidate.default.ReactFlow === 'function') {
-        console.debug('resolveReactFlow: using candidate.default.ReactFlow');
-        return candidate.default.ReactFlow;
+        console.debug('resolveReactFlow: using candidate.default (module-like, has ReactFlow)');
+        return candidate.default;
       }
 
       // If candidate.default is itself the component
@@ -162,10 +164,23 @@
           if (fn.name && String(fn.name).toLowerCase().includes('reactflow')) return true;
           const src = String(fn);
           // positive indicators
-          const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'ReactFlowProvider', 'fitViewOnInit', 'react-flow__renderer', 'react-flow__viewport', 'react-flow__nodes'];
+          const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'fitViewOnInit', 'react-flow__renderer', 'react-flow__viewport', 'react-flow__nodes'];
           if (indicators.some(s => src.indexOf(s) !== -1)) return true;
           // negative indicators that strongly suggest an edge/node renderer or panel helper
           if (/react-flow__panel|labelX|labelY|markerEnd|markerStart|interactionWidth|edge-interaction|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge/i.test(src)) return false;
+        } catch (e) {}
+        return false;
+      }
+
+      // Detect provider-like functions (they accept children and pass a `value` prop)
+      function isProviderFunction(fn) {
+        if (typeof fn !== 'function') return false;
+        try {
+          const src = String(fn);
+          if (/\bchildren\b/.test(src) && /\bvalue\b/.test(src)) return true;
+          if (/createElement\([^,]+,\s*\{\s*value:/.test(src)) return true;
+          const name = fn.name || fn.displayName || '';
+          if (/Provider/i.test(name)) return true;
         } catch (e) {}
         return false;
       }
@@ -198,10 +213,12 @@
       // Fallback scanning: pick the first function export that looks like the main component
       try {
         for (const k of Object.keys(candidate)) {
-          // skip obvious edge/node helpers by key name
-          if (/(edge|bezier|label|baseedge|edgelabelrenderer)/i.test(k)) continue;
+          // skip obvious edge/node helpers or providers by key name
+          if (/(edge|bezier|label|baseedge|edgelabelrenderer|provider|panel)/i.test(k)) continue;
           const v = candidate[k];
           if (typeof v === 'function') {
+            // skip provider-like functions or explicit edge renderers
+            if (isProviderFunction(v)) continue;
             const src = String(v);
             if (/labelX|labelY|markerEnd|markerStart|interactionWidth|edge-path|edge-interaction/i.test(src)) continue;
             if (isLikelyReactFlow(v)) {
@@ -209,22 +226,23 @@
               return v;
             }
           }
-          if (v && typeof v.default === 'function' && isLikelyReactFlow(v.default)) {
+          if (v && typeof v.default === 'function' && !isProviderFunction(v.default) && isLikelyReactFlow(v.default)) {
             console.debug('resolveReactFlow: fallback found likely ReactFlow.default at key', k);
             return v.default;
           }
         }
         // last resort: any non-edge function (skip keys that look like edges)
         for (const k of Object.keys(candidate)) {
-          if (/(edge|bezier|label|baseedge|edgelabelrenderer)/i.test(k)) continue;
+          if (/(edge|bezier|label|baseedge|edgelabelrenderer|provider|panel)/i.test(k)) continue;
           const v = candidate[k];
           if (typeof v === 'function') {
+            if (isProviderFunction(v)) continue;
             const src = String(v);
             if (/labelX|labelY|markerEnd|markerStart|interactionWidth/i.test(src)) continue;
             console.debug('resolveReactFlow: fallback any function at key', k);
             return v;
           }
-          if (v && typeof v.default === 'function') return v.default;
+          if (v && typeof v.default === 'function' && !isProviderFunction(v.default)) return v.default;
         }
       } catch (e) {}
 
