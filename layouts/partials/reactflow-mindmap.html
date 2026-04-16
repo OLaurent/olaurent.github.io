@@ -610,6 +610,14 @@
     const nodes = layoutResult.nodes;
     const edges = layoutResult.edges;
 
+    console.group('React Flow layout data');
+    console.debug('treeRoot:', treeRoot);
+    console.debug('walkTree output:', treeData);
+    console.debug('layoutString:', layoutString);
+    console.debug('final nodes:', nodes);
+    console.debug('final edges:', edges);
+    console.groupEnd();
+
     function Flow() {
       const [stateNodes] = React.useState(nodes);
       const [stateEdges] = React.useState(edges);
@@ -640,6 +648,12 @@
     }
 
     function mountFlow() {
+      console.debug('createMindmap: mounting React Flow', {
+        ReactFlowType: typeof ReactFlow,
+        ReactFlowName: ReactFlow && (ReactFlow.name || ReactFlow.displayName),
+        ReactFlowKeys: ReactFlow && typeof ReactFlow === 'object' ? Object.keys(ReactFlow).slice(0,40) : null,
+        hasReactFlowProvider: !!ReactFlowProvider
+      });
       try {
         const root = ReactDOM.createRoot(container);
         if (ReactFlowProvider && typeof ReactFlowProvider === 'function') {
@@ -755,6 +769,14 @@
     let mindmapConfig;
     try {
       mindmapConfig = JSON.parse(mindmapJson);
+      console.group('React Flow mindmap data');
+      console.debug('Parsed mindmapConfig:', mindmapConfig);
+      console.debug('mindmapConfig.root:', mindmapConfig.root);
+      console.debug('mindmapConfig.layout:', mindmapConfig.layout);
+      if (mindmapConfig.root && Array.isArray(mindmapConfig.root.children)) {
+        console.debug('root children count:', mindmapConfig.root.children.length);
+      }
+      console.groupEnd();
     } catch (error) {
       console.error('Mindmap JSON parsing failed:', error, mindmapJson);
       return false;

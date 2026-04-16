@@ -8,7 +8,7 @@ description: "Intégrales définies et aires sous la courbe."
 documents:
   - label: "Cours complet"
     type: cours
-    url: "/assets/pdf/terminale-specialite/TEDS11 - Calcul Integral/Cours/TEDS11 - Calcul integral - Cours.pdf"
+    url: "/assets/pdf/terminale-specialite/TEDS11 - Calcul Integral/Cours/TEDS11 - Calcul intégral - Cours.pdf"
   - label: "Exercices"
     type: exercices
     url: "/assets/pdf/seconde/ch05-exos.pdf"
@@ -45,7 +45,22 @@ mindmap:
     description: "Comprendre le lien entre primitive, intégrale et aire."
     children:
       - label: "Primitives"
-      - label: "Changement de variable"
+        latex: "F'(x)=f(x)"
+        description: "F' est la fonction dérivée de F."
+      - label: "Intégrale définie"
+        latex: "\\int_a^b f(x) \\, dx"
+        children:
+          - label: "Aire signée"
+            description: "L'aire est positive si f ≥ 0."
+          - label: "Relation fondamentale"
+            latex: "F(b)-F(a)"
+            description: "Lien avec la primitive."
+      - label: "Propriétés"
+        children:
+          - label: "Linéarité"
+            description: "\"∫(f+g)=∫f+∫g\""
+          - label: "Changement de variable"
+            description: "Technique très utilisée."
 ---
 
 ## Ce que ce chapitre travaille
