@@ -89,8 +89,8 @@
         if (typeof fn !== 'function') return false;
         try {
           const name = (fn.name || fn.displayName || '').toLowerCase();
-          if (/^(get|set|is|has|compute|calc|to|from)/i.test(name)) return true;
-          if (/getrectofnodes|getnodesbounds|getrect|getnodes/i.test(name)) return true;
+          if (/^(get|set|is|has|compute|calc|to|from|apply|update)/i.test(name)) return true;
+          if (/getrectofnodes|getnodesbounds|getrect|getnodes|applynodechanges|applychanges|updatenodechanges|updatenodes/i.test(name)) return true;
           const src = String(fn);
           if (/\[DEPRECATED\]|getRectOfNodes|getNodesBounds|console\.warn\(/i.test(src)) return true;
           if (/\breduce\(/.test(src) && /getrectofnodes|getnodesbounds|nodes|rect|bounds/i.test(src)) return true;
@@ -319,23 +319,52 @@
     const nodeWidth = (mindmapConfig && mindmapConfig.nodeWidth) || 220;
     const nodeHeight = (mindmapConfig && mindmapConfig.nodeHeight) || 80;
 
-    // Strong override: prefer canonical module exports (window.ReactFlowCore, window.ReactFlow) then flowCore/flowGlobal
+    // Strong canonical-first selection: prefer UMD globals (window.ReactFlowCore, window.ReactFlow)
+    // before running heuristics on module objects. This avoids selecting small helper
+    // functions that happen to be the first function export (e.g. applyNodeChanges).
     let ReactFlowComp = null;
     let chosenModule = null;
     try {
-      if (window.ReactFlowCore && (window.ReactFlowCore.ReactFlow || window.ReactFlowCore.default)) {
-        chosenModule = window.ReactFlowCore;
-      } else if (window.ReactFlow && (window.ReactFlow.ReactFlow || typeof window.ReactFlow === 'function' || window.ReactFlow.default)) {
-        chosenModule = window.ReactFlow;
-      } else if (globals.flowCore && (globals.flowCore.ReactFlow || globals.flowCore.default)) {
-        chosenModule = globals.flowCore;
-      } else if (globals.flowGlobal && (globals.flowGlobal.ReactFlow || globals.flowGlobal.default)) {
-        chosenModule = globals.flowGlobal;
-      } else if (globals.ReactFlow && (typeof globals.ReactFlow === 'function' || globals.ReactFlow.ReactFlow || globals.ReactFlow.default)) {
-        if (typeof globals.ReactFlow === 'function') {
-          ReactFlowComp = globals.ReactFlow;
-        } else {
-          chosenModule = globals.ReactFlow;
+      if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
+        ReactFlowComp = window.ReactFlowCore.ReactFlow;
+        if (!ReactFlowProvider && typeof window.ReactFlowCore.ReactFlowProvider === 'function') {
+          ReactFlowProvider = window.ReactFlowCore.ReactFlowProvider;
+        }
+        console.debug('createMindmap: canonical pick window.ReactFlowCore.ReactFlow');
+      } else if (window.ReactFlow && typeof window.ReactFlow.ReactFlow === 'function') {
+        ReactFlowComp = window.ReactFlow.ReactFlow;
+        if (!ReactFlowProvider && typeof window.ReactFlow.ReactFlowProvider === 'function') {
+          ReactFlowProvider = window.ReactFlow.ReactFlowProvider;
+        }
+        console.debug('createMindmap: canonical pick window.ReactFlow.ReactFlow');
+      } else if (typeof window.ReactFlow === 'function') {
+        ReactFlowComp = window.ReactFlow;
+        console.debug('createMindmap: canonical pick window.ReactFlow (function)');
+      } else if (globals.flowCore && typeof globals.flowCore.ReactFlow === 'function') {
+        ReactFlowComp = globals.flowCore.ReactFlow;
+        if (!ReactFlowProvider && typeof globals.flowCore.ReactFlowProvider === 'function') {
+          ReactFlowProvider = globals.flowCore.ReactFlowProvider;
+        }
+        console.debug('createMindmap: canonical pick globals.flowCore.ReactFlow');
+      } else if (globals.ReactFlow && typeof globals.ReactFlow === 'function') {
+        ReactFlowComp = globals.ReactFlow;
+        console.debug('createMindmap: using globals.ReactFlow (function)');
+      } else {
+        // fall back to scanning known module objects
+        if (window.ReactFlowCore && (window.ReactFlowCore.ReactFlow || window.ReactFlowCore.default)) {
+          chosenModule = window.ReactFlowCore;
+        } else if (window.ReactFlow && (window.ReactFlow.ReactFlow || typeof window.ReactFlow === 'function' || window.ReactFlow.default)) {
+          chosenModule = window.ReactFlow;
+        } else if (globals.flowCore && (globals.flowCore.ReactFlow || globals.flowCore.default)) {
+          chosenModule = globals.flowCore;
+        } else if (globals.flowGlobal && (globals.flowGlobal.ReactFlow || globals.flowGlobal.default)) {
+          chosenModule = globals.flowGlobal;
+        } else if (globals.ReactFlow && (typeof globals.ReactFlow === 'function' || globals.ReactFlow.ReactFlow || globals.ReactFlow.default)) {
+          if (typeof globals.ReactFlow === 'function') {
+            ReactFlowComp = globals.ReactFlow;
+          } else {
+            chosenModule = globals.ReactFlow;
+          }
         }
       }
     } catch (e) {}
@@ -455,6 +484,43 @@
     console.debug('createMindmap: chosen ReactFlow component type=', typeof ReactFlowComp, ReactFlowComp && (ReactFlowComp.name || ReactFlowComp.displayName || '[function]'));
     ReactFlow = ReactFlowComp;
 
+    // If we still don't have a usable function component, try loading an ESM bundle dynamically as a last resort
+    function isFunctionLike(x) { return typeof x === 'function'; }
+    async function tryLoadEsmFallback() {
+      const urls = [
+        'https://unpkg.com/@reactflow/core@11.11.4/dist/esm/index.js',
+        'https://cdn.jsdelivr.net/npm/@reactflow/core@11.11.4/dist/esm/index.js',
+        'https://unpkg.com/@reactflow/core@11.11.4/dist/index.esm.js',
+        'https://cdn.jsdelivr.net/npm/@reactflow/core@11.11.4/dist/index.esm.js'
+      ];
+      for (const u of urls) {
+        try {
+          console.debug('createMindmap: attempting dynamic import of ReactFlow ESM from', u);
+          const mod = await import(u);
+          if (mod) {
+            const candidate = mod.ReactFlow || mod.default || mod;
+            if (isFunctionLike(candidate) || (candidate && isFunctionLike(candidate.ReactFlow))) {
+              if (candidate.ReactFlow && isFunctionLike(candidate.ReactFlow)) {
+                ReactFlow = candidate.ReactFlow;
+                if (!ReactFlowProvider && candidate.ReactFlowProvider) ReactFlowProvider = candidate.ReactFlowProvider;
+                console.debug('createMindmap: loaded ReactFlow from ESM', u);
+                return true;
+              }
+              if (isFunctionLike(candidate)) {
+                ReactFlow = candidate;
+                if (!ReactFlowProvider && mod.ReactFlowProvider) ReactFlowProvider = mod.ReactFlowProvider;
+                console.debug('createMindmap: loaded ReactFlow (default) from ESM', u);
+                return true;
+              }
+            }
+          }
+        } catch (e) {
+          console.debug('createMindmap: dynamic import failed for', u, e && (e.message || e));
+        }
+      }
+      return false;
+    }
+
     // Walk the provided mindmap tree and build nodes/edges arrays suitable for layout
     function walkTree(node, parentId = null, all = { nodes: [], edges: [] }) {
       if (!node) return all;
@@ -546,8 +612,41 @@
       });
     }
 
-    const root = ReactDOM.createRoot(container);
-    root.render(React.createElement(ReactFlowProvider, null, React.createElement(Flow, null)));
+    function mountFlow() {
+      try {
+        const root = ReactDOM.createRoot(container);
+        if (ReactFlowProvider && typeof ReactFlowProvider === 'function') {
+          root.render(React.createElement(ReactFlowProvider, null, React.createElement(Flow, null)));
+        } else {
+          root.render(React.createElement(Flow, null));
+        }
+      } catch (e) {
+        console.error('createMindmap: mount failed', e);
+      }
+    }
+
+    // If candidate is not a clear function, try ESM dynamic import before mounting
+    if (!isFunctionLike(ReactFlow)) {
+      tryLoadEsmFallback().then(ok => {
+        if (ok && isFunctionLike(ReactFlow)) {
+          mountFlow();
+        } else {
+          // As last resort, attempt to unwrap module-like object to a function and mount
+          try {
+            if (ReactFlow && typeof ReactFlow === 'object') {
+              if (typeof ReactFlow.ReactFlow === 'function') ReactFlow = ReactFlow.ReactFlow;
+              else if (ReactFlow.default && typeof ReactFlow.default === 'function') ReactFlow = ReactFlow.default;
+            }
+          } catch (e) {}
+          if (isFunctionLike(ReactFlow)) mountFlow();
+          else console.error('createMindmap: no usable ReactFlow component found to mount');
+        }
+      }).catch(err => console.error('createMindmap: ESM fallback error', err));
+      return;
+    }
+
+    // otherwise mount immediately
+    mountFlow();
   }
 
   function initMindmap() {
