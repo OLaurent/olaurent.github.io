@@ -405,6 +405,53 @@
 
     if (!ReactFlowComp && typeof window.ReactFlow === 'function') ReactFlowComp = window.ReactFlow;
     if (!ReactFlowComp) ReactFlowComp = ReactFlow;
+
+    // Strong override: if heuristics failed or a module object was chosen,
+    // prefer canonical UMD globals and unwrap module objects to get the real component.
+    try {
+      if (!ReactFlowComp || typeof ReactFlowComp !== 'function') {
+        if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
+          ReactFlowComp = window.ReactFlowCore.ReactFlow;
+          console.debug('createMindmap: forced ReactFlow from window.ReactFlowCore.ReactFlow');
+          if (!ReactFlowProvider && typeof window.ReactFlowCore.ReactFlowProvider === 'function') {
+            ReactFlowProvider = window.ReactFlowCore.ReactFlowProvider;
+          }
+        } else if (window.ReactFlow && typeof window.ReactFlow.ReactFlow === 'function') {
+          ReactFlowComp = window.ReactFlow.ReactFlow;
+          console.debug('createMindmap: forced ReactFlow from window.ReactFlow.ReactFlow');
+          if (!ReactFlowProvider && typeof window.ReactFlow.ReactFlowProvider === 'function') {
+            ReactFlowProvider = window.ReactFlow.ReactFlowProvider;
+          }
+        } else if (typeof window.ReactFlow === 'function') {
+          ReactFlowComp = window.ReactFlow;
+          console.debug('createMindmap: forced ReactFlow from window.ReactFlow (function)');
+        } else if (globals.flowCore && typeof globals.flowCore.ReactFlow === 'function') {
+          ReactFlowComp = globals.flowCore.ReactFlow;
+          console.debug('createMindmap: forced ReactFlow from globals.flowCore.ReactFlow');
+          if (!ReactFlowProvider && typeof globals.flowCore.ReactFlowProvider === 'function') {
+            ReactFlowProvider = globals.flowCore.ReactFlowProvider;
+          }
+        } else if (globals.flowGlobal && typeof globals.flowGlobal.ReactFlow === 'function') {
+          ReactFlowComp = globals.flowGlobal.ReactFlow;
+          console.debug('createMindmap: forced ReactFlow from globals.flowGlobal.ReactFlow');
+        }
+      } else if (typeof ReactFlowComp === 'object') {
+        // module object: try unwrapping known properties to find the component function
+        try {
+          if (ReactFlowComp.ReactFlow && typeof ReactFlowComp.ReactFlow === 'function') {
+            ReactFlowComp = ReactFlowComp.ReactFlow;
+            console.debug('createMindmap: unwrapped ReactFlow from module.ReactFlow');
+          } else if (ReactFlowComp.default && typeof ReactFlowComp.default.ReactFlow === 'function') {
+            ReactFlowComp = ReactFlowComp.default.ReactFlow;
+            console.debug('createMindmap: unwrapped ReactFlow from module.default.ReactFlow');
+          } else if (ReactFlowComp.default && typeof ReactFlowComp.default === 'function') {
+            ReactFlowComp = ReactFlowComp.default;
+            console.debug('createMindmap: unwrapped ReactFlow from module.default (function)');
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
+
     console.debug('createMindmap: chosen ReactFlow component type=', typeof ReactFlowComp, ReactFlowComp && (ReactFlowComp.name || ReactFlowComp.displayName || '[function]'));
     ReactFlow = ReactFlowComp;
 
