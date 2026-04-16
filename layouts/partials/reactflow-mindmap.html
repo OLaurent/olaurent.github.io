@@ -84,31 +84,44 @@
         // ignore
       }
 
+      // Utility detection: reject functions that are clearly helpers (getRectOfNodes, getNodesBounds, etc.)
+      function isUtilityFunction(fn) {
+        if (typeof fn !== 'function') return false;
+        try {
+          const name = (fn.name || fn.displayName || '').toLowerCase();
+          if (/^(get|set|is|has|compute|calc|to|from)/i.test(name)) return true;
+          if (/getrectofnodes|getnodesbounds|getrect|getnodes/i.test(name)) return true;
+          const src = String(fn);
+          if (/\[DEPRECATED\]|getRectOfNodes|getNodesBounds|console\.warn\(/i.test(src)) return true;
+          if (/\breduce\(/.test(src) && /getrectofnodes|getnodesbounds|nodes|rect|bounds/i.test(src)) return true;
+        } catch (e) {}
+        return false;
+      }
+
       // Prefer explicit properties that should hold the top-level component
       // Return the module object itself so the caller can choose the correct export (safer than returning provider functions)
-      if (candidate?.ReactFlow && typeof candidate.ReactFlow === 'function') {
+      if (candidate?.ReactFlow && typeof candidate.ReactFlow === 'function' && !isUtilityFunction(candidate.ReactFlow)) {
         console.debug('resolveReactFlow: using candidate module (has ReactFlow)');
         return candidate;
       }
-      // If ReactFlow property is present under candidate.ReactFlow.default, return candidate.ReactFlow (module-like) or candidate.default
-      if (candidate?.ReactFlow && candidate.ReactFlow?.default && typeof candidate.ReactFlow.default === 'function') {
+      // If ReactFlow property is present under candidate.ReactFlow.default, return candidate (module-like)
+      if (candidate?.ReactFlow && candidate.ReactFlow?.default && typeof candidate.ReactFlow.default === 'function' && !isUtilityFunction(candidate.ReactFlow.default)) {
         console.debug('resolveReactFlow: using candidate module (ReactFlow.default)');
         return candidate;
       }
-      if (candidate?.default?.ReactFlow && typeof candidate.default.ReactFlow === 'function') {
+      if (candidate?.default?.ReactFlow && typeof candidate.default.ReactFlow === 'function' && !isUtilityFunction(candidate.default.ReactFlow)) {
         console.debug('resolveReactFlow: using candidate.default (module-like, has ReactFlow)');
         return candidate.default;
       }
 
-      // If candidate.default is itself the component
-      if (typeof candidate.default === 'function' && /reactflow|react-flow|graphview|flow/i.test(candidate.default.name || '')) {
+      // If candidate.default is itself the component and not a utility
+      if (typeof candidate.default === 'function' && !isUtilityFunction(candidate.default) && /reactflow|react-flow|graphview|flow/i.test(candidate.default.name || '')) {
         console.debug('resolveReactFlow: using candidate.default (function) name=', candidate.default.name);
         return candidate.default;
       }
 
-      // If there is an explicit 'default' function export, prefer it only if it looks like ReactFlow
-      if (typeof candidate === 'object' && typeof candidate.default === 'function') {
-        // check string content for clues (cheap heuristic)
+      // If there is an explicit 'default' function export, prefer it only if it looks like ReactFlow and is not a utility
+      if (typeof candidate === 'object' && typeof candidate.default === 'function' && !isUtilityFunction(candidate.default)) {
         try {
           const src = String(candidate.default);
           if (/reactflow|react-flow|ReactFlow|GraphView/.test(src)) {
@@ -168,6 +181,8 @@
           if (indicators.some(s => src.indexOf(s) !== -1)) return true;
           // negative indicators that strongly suggest an edge/node renderer or panel helper
           if (/react-flow__panel|labelX|labelY|markerEnd|markerStart|interactionWidth|edge-interaction|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge/i.test(src)) return false;
+          // avoid utility-like functions
+          if (isUtilityFunction(fn)) return false;
         } catch (e) {}
         return false;
       }
@@ -187,7 +202,7 @@
 
       // If candidate is a raw function, accept it only if it looks like the main component
       if (typeof candidate === 'function') {
-        if (looksLikeMainReactFlowFunction(candidate) || isLikelyReactFlow(candidate)) {
+        if (!isUtilityFunction(candidate) && (looksLikeMainReactFlowFunction(candidate) || isLikelyReactFlow(candidate))) {
           console.debug('resolveReactFlow: accepting function candidate', candidate.name || '(anonymous)');
           return candidate;
         }
@@ -199,11 +214,11 @@
       for (const k of prefer) {
         try {
           const v = candidate[k];
-          if (typeof v === 'function' && isLikelyReactFlow(v)) {
+          if (typeof v === 'function' && !isUtilityFunction(v) && isLikelyReactFlow(v)) {
             console.debug('resolveReactFlow: using prefer key', k);
             return v;
           }
-          if (v && typeof v.default === 'function' && isLikelyReactFlow(v.default)) {
+          if (v && typeof v.default === 'function' && !isUtilityFunction(v.default) && isLikelyReactFlow(v.default)) {
             console.debug('resolveReactFlow: using prefer key default of', k);
             return v.default;
           }
@@ -218,7 +233,7 @@
           const v = candidate[k];
           if (typeof v === 'function') {
             // skip provider-like functions or explicit edge renderers
-            if (isProviderFunction(v)) continue;
+            if (isProviderFunction(v) || isUtilityFunction(v)) continue;
             const src = String(v);
             if (/labelX|labelY|markerEnd|markerStart|interactionWidth|edge-path|edge-interaction/i.test(src)) continue;
             if (isLikelyReactFlow(v)) {
@@ -226,7 +241,7 @@
               return v;
             }
           }
-          if (v && typeof v.default === 'function' && !isProviderFunction(v.default) && isLikelyReactFlow(v.default)) {
+          if (v && typeof v.default === 'function' && !isProviderFunction(v.default) && !isUtilityFunction(v.default) && isLikelyReactFlow(v.default)) {
             console.debug('resolveReactFlow: fallback found likely ReactFlow.default at key', k);
             return v.default;
           }
@@ -236,13 +251,13 @@
           if (/(edge|bezier|label|baseedge|edgelabelrenderer|provider|panel)/i.test(k)) continue;
           const v = candidate[k];
           if (typeof v === 'function') {
-            if (isProviderFunction(v)) continue;
+            if (isProviderFunction(v) || isUtilityFunction(v)) continue;
             const src = String(v);
             if (/labelX|labelY|markerEnd|markerStart|interactionWidth/i.test(src)) continue;
             console.debug('resolveReactFlow: fallback any function at key', k);
             return v;
           }
-          if (v && typeof v.default === 'function' && !isProviderFunction(v.default)) return v.default;
+          if (v && typeof v.default === 'function' && !isProviderFunction(v.default) && !isUtilityFunction(v.default)) return v.default;
         }
       } catch (e) {}
 
@@ -338,6 +353,18 @@
         if (typeof fn !== 'function') return false;
         try { return /labelX|labelY|markerEnd|markerStart|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge|SmoothStepEdge|StepEdge|StraightEdge|interactionWidth/i.test(String(fn)); } catch (e) { return false; }
       }
+      function localIsUtilityFunction(fn) {
+        if (typeof fn !== 'function') return false;
+        try {
+          const name = (fn.name || fn.displayName || '').toLowerCase();
+          if (/^(get|set|is|has|compute|calc|to|from)/i.test(name)) return true;
+          if (/getrectofnodes|getnodesbounds|getrect|getnodes/i.test(name)) return true;
+          const src = String(fn);
+          if (/\[DEPRECATED\]|getRectOfNodes|getNodesBounds|console\.warn\(/i.test(src)) return true;
+          if (/\breduce\(/.test(src) && /getrectofnodes|getnodesbounds|nodes|rect|bounds/i.test(src)) return true;
+        } catch (e) {}
+        return false;
+      }
       function localIsLikelyReactFlow(fn) {
         if (typeof fn !== 'function') return false;
         try {
@@ -346,20 +373,21 @@
           const src = String(fn);
           const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'fitViewOnInit'];
           if (indicators.some(s => src.indexOf(s) !== -1)) return true;
+          if (localIsUtilityFunction(fn)) return false;
         } catch (e) {}
         return false;
       }
 
       let comp = null;
-      if (typeof chosenModule.ReactFlow === 'function') comp = chosenModule.ReactFlow;
-      else if (chosenModule.default && typeof chosenModule.default === 'function') comp = chosenModule.default;
-      else if (typeof chosenModule === 'function') comp = chosenModule;
+      if (typeof chosenModule.ReactFlow === 'function' && !localIsUtilityFunction(chosenModule.ReactFlow)) comp = chosenModule.ReactFlow;
+      else if (chosenModule.default && typeof chosenModule.default === 'function' && !localIsUtilityFunction(chosenModule.default)) comp = chosenModule.default;
+      else if (typeof chosenModule === 'function' && !localIsUtilityFunction(chosenModule)) comp = chosenModule;
       else {
-        // scan module properties for a likely component (avoid providers/panels/edges)
+        // scan module properties for a likely component (avoid providers/panels/edges/utilities)
         try {
           for (const k of Object.keys(chosenModule)) {
             const v = chosenModule[k];
-            if (typeof v === 'function' && !localIsProviderFunction(v) && !localIsEdgeRenderer(v) && localIsLikelyReactFlow(v)) {
+            if (typeof v === 'function' && !localIsProviderFunction(v) && !localIsEdgeRenderer(v) && !localIsUtilityFunction(v) && localIsLikelyReactFlow(v)) {
               comp = v;
               break;
             }
@@ -367,8 +395,8 @@
         } catch (e) {}
       }
 
-      // fallback: accept module.ReactFlow even if not function (will be unwrapped later)
-      if (!comp && typeof chosenModule.ReactFlow !== 'undefined') comp = chosenModule.ReactFlow;
+      // fallback: accept module.ReactFlow even if not function (will be unwrapped later), but avoid utility functions
+      if (!comp && typeof chosenModule.ReactFlow !== 'undefined' && !localIsUtilityFunction(chosenModule.ReactFlow)) comp = chosenModule.ReactFlow;
 
       ReactFlowComp = comp;
       if (chosenModule.ReactFlowProvider && typeof chosenModule.ReactFlowProvider === 'function') ReactFlowProvider = chosenModule.ReactFlowProvider;
