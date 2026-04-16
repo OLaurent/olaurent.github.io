@@ -69,6 +69,11 @@
         console.debug('resolveReactFlow: using candidate.ReactFlow');
         return candidate.ReactFlow;
       }
+      // If ReactFlow property is present but wrapped (e.g. { default: fn }), unwrap it
+      if (candidate?.ReactFlow && candidate.ReactFlow?.default && typeof candidate.ReactFlow.default === 'function') {
+        console.debug('resolveReactFlow: using candidate.ReactFlow.default');
+        return candidate.ReactFlow.default;
+      }
       if (candidate?.default?.ReactFlow && typeof candidate.default.ReactFlow === 'function') {
         console.debug('resolveReactFlow: using candidate.default.ReactFlow');
         return candidate.default.ReactFlow;
@@ -95,9 +100,16 @@
       // Look for a property explicitly named 'ReactFlow' (case-insensitive)
       try {
         for (const k of Object.keys(candidate)) {
-          if (k.toLowerCase() === 'reactflow' && typeof candidate[k] === 'function') {
-            console.debug('resolveReactFlow: found property', k);
-            return candidate[k];
+          if (k.toLowerCase() === 'reactflow') {
+            const v = candidate[k];
+            if (typeof v === 'function') {
+              console.debug('resolveReactFlow: found property', k);
+              return v;
+            }
+            if (v && typeof v.default === 'function') {
+              console.debug('resolveReactFlow: found property', k, 'with .default');
+              return v.default;
+            }
           }
         }
       } catch (e) {}
@@ -340,6 +352,37 @@
         ReactFlow = ReactFlow.default.ReactFlow;
       }
     }
+    // If the chosen export is a function that looks like an edge/node renderer,
+    // attempt to pick the explicit `ReactFlow` export from common module candidates.
+    function isEdgeRenderer(fn) {
+      try {
+        const s = String(fn);
+        return /labelX|labelY|markerEnd|markerStart|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge|SmoothStepEdge|StepEdge|StraightEdge|interactionWidth/i.test(s);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    if (typeof ReactFlow === 'function' && isEdgeRenderer(ReactFlow)) {
+      console.warn('resolveReactFlow: selected function looks like an edge renderer; trying explicit ReactFlow exports');
+      const preferCandidates = [globals.flowCore, globals.flowCore?.default, globals.flowGlobal, globals.flowGlobal?.default, window.ReactFlowCore, window.ReactFlow, window.ReactFlowCore?.default, window.ReactFlow?.default];
+      for (const cand of preferCandidates) {
+        try {
+          if (!cand) continue;
+          if (typeof cand.ReactFlow === 'function') {
+            ReactFlow = cand.ReactFlow;
+            console.debug('resolveReactFlow: switched to cand.ReactFlow');
+            break;
+          }
+          if (typeof cand.default === 'function' && /reactflow|ReactFlow/i.test(String(cand.default))) {
+            ReactFlow = cand.default;
+            console.debug('resolveReactFlow: switched to cand.default');
+            break;
+          }
+        } catch (e) {}
+      }
+    }
+
     globals.ReactFlow = ReactFlow;
 
     if (!globals.React || !globals.ReactDOM || !globals.ReactDOM.createRoot || !globals.ReactFlowProvider || !globals.ReactFlow) {
