@@ -130,9 +130,11 @@
           if (fn.displayName && String(fn.displayName).toLowerCase().includes('reactflow')) return true;
           if (fn.name && String(fn.name).toLowerCase().includes('reactflow')) return true;
           const src = String(fn);
-          const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'react-flow__', 'ReactFlowProvider'];
+          // positive indicators
+          const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'react-flow__', 'ReactFlowProvider', 'fitViewOnInit', 'react-flow__renderer'];
           if (indicators.some(s => src.indexOf(s) !== -1)) return true;
-          if (/\bid[, ]*path[, ]*labelX\b/.test(src)) return false; // reject edge renderers
+          // negative indicators that strongly suggest an edge/node renderer
+          if (/labelX|labelY|markerEnd|markerStart|interactionWidth|edge-interaction|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge/i.test(src)) return false;
         } catch (e) {}
         return false;
       }
@@ -165,20 +167,29 @@
       // Fallback scanning: pick the first function export that looks like the main component
       try {
         for (const k of Object.keys(candidate)) {
+          // skip obvious edge/node helpers by key name
+          if (/(edge|bezier|label|baseedge|edgelabelrenderer)/i.test(k)) continue;
           const v = candidate[k];
-          if (typeof v === 'function' && isLikelyReactFlow(v)) {
-            console.debug('resolveReactFlow: fallback found likely ReactFlow at key', k);
-            return v;
+          if (typeof v === 'function') {
+            const src = String(v);
+            if (/labelX|labelY|markerEnd|markerStart|interactionWidth|edge-path|edge-interaction/i.test(src)) continue;
+            if (isLikelyReactFlow(v)) {
+              console.debug('resolveReactFlow: fallback found likely ReactFlow at key', k);
+              return v;
+            }
           }
           if (v && typeof v.default === 'function' && isLikelyReactFlow(v.default)) {
             console.debug('resolveReactFlow: fallback found likely ReactFlow.default at key', k);
             return v.default;
           }
         }
-        // last resort: any non-edge function
+        // last resort: any non-edge function (skip keys that look like edges)
         for (const k of Object.keys(candidate)) {
+          if (/(edge|bezier|label|baseedge|edgelabelrenderer)/i.test(k)) continue;
           const v = candidate[k];
-          if (typeof v === 'function' && !/\bid[, ]*path[, ]*labelX\b/.test(String(v))) {
+          if (typeof v === 'function') {
+            const src = String(v);
+            if (/labelX|labelY|markerEnd|markerStart|interactionWidth/i.test(src)) continue;
             console.debug('resolveReactFlow: fallback any function at key', k);
             return v;
           }
@@ -201,6 +212,14 @@
 
   // createMindmap: builds nodes/edges and mounts React Flow into the container
   function createMindmap(container, mindmapConfig, globals) {
+    // Local runtime helpers & defaults
+    const dagreLib = globals.dagreLib || window.dagre || window.dagreLib || null;
+    const React = globals.React || window.React || null;
+    const ReactDOM = globals.ReactDOM || window.ReactDOM || null;
+    const ReactFlow = globals.ReactFlow || window.ReactFlow || null;
+    const ReactFlowProvider = globals.ReactFlowProvider || window.ReactFlowProvider || null;
+    const nodeWidth = (mindmapConfig && mindmapConfig.nodeWidth) || 220;
+    const nodeHeight = (mindmapConfig && mindmapConfig.nodeHeight) || 80;
 
     // Walk the provided mindmap tree and build nodes/edges arrays suitable for layout
     function walkTree(node, parentId = null, all = { nodes: [], edges: [] }) {
