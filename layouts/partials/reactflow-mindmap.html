@@ -300,29 +300,41 @@
     const React = globals.React || window.React || null;
     const ReactDOM = globals.ReactDOM || window.ReactDOM || null;
     let ReactFlow = globals.ReactFlow || window.ReactFlow || null;
-    const ReactFlowProvider = globals.ReactFlowProvider || window.ReactFlowProvider || null;
+    let ReactFlowProvider = globals.ReactFlowProvider || window.ReactFlowProvider || null;
     const nodeWidth = (mindmapConfig && mindmapConfig.nodeWidth) || 220;
     const nodeHeight = (mindmapConfig && mindmapConfig.nodeHeight) || 80;
 
-    // Force selection of the real ReactFlow component from known globals/candidates
-    let ReactFlowComp = ReactFlow;
+    // Strong override: prefer canonical module exports (window.ReactFlowCore, window.ReactFlow) then flowCore/flowGlobal
+    let ReactFlowComp = null;
+    let chosenModule = null;
     try {
-      if (typeof window.ReactFlow === 'function') {
-        ReactFlowComp = window.ReactFlow;
-      } else if (window.ReactFlow && typeof window.ReactFlow.ReactFlow === 'function') {
-        ReactFlowComp = window.ReactFlow.ReactFlow;
-      } else if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
-        ReactFlowComp = window.ReactFlowCore.ReactFlow;
-      } else if (globals.flowCore && typeof globals.flowCore.ReactFlow === 'function') {
-        ReactFlowComp = globals.flowCore.ReactFlow;
-      } else if (globals.flowCore && globals.flowCore.default && typeof globals.flowCore.default === 'function') {
-        ReactFlowComp = globals.flowCore.default;
-      } else if (globals.flowGlobal && typeof globals.flowGlobal.ReactFlow === 'function') {
-        ReactFlowComp = globals.flowGlobal.ReactFlow;
+      if (window.ReactFlowCore && (window.ReactFlowCore.ReactFlow || window.ReactFlowCore.default)) {
+        chosenModule = window.ReactFlowCore;
+      } else if (window.ReactFlow && (window.ReactFlow.ReactFlow || typeof window.ReactFlow === 'function' || window.ReactFlow.default)) {
+        chosenModule = window.ReactFlow;
+      } else if (globals.flowCore && (globals.flowCore.ReactFlow || globals.flowCore.default)) {
+        chosenModule = globals.flowCore;
+      } else if (globals.flowGlobal && (globals.flowGlobal.ReactFlow || globals.flowGlobal.default)) {
+        chosenModule = globals.flowGlobal;
+      } else if (globals.ReactFlow && (typeof globals.ReactFlow === 'function' || globals.ReactFlow.ReactFlow || globals.ReactFlow.default)) {
+        if (typeof globals.ReactFlow === 'function') {
+          ReactFlowComp = globals.ReactFlow;
+        } else {
+          chosenModule = globals.ReactFlow;
+        }
       }
     } catch (e) {}
+
+    if (chosenModule) {
+      ReactFlowComp = chosenModule.ReactFlow || chosenModule.default || (typeof chosenModule === 'function' ? chosenModule : null);
+      if (chosenModule.ReactFlowProvider) ReactFlowProvider = chosenModule.ReactFlowProvider;
+      else if (chosenModule.default && chosenModule.default.ReactFlowProvider) ReactFlowProvider = chosenModule.default.ReactFlowProvider;
+    }
+
+    if (!ReactFlowComp && typeof window.ReactFlow === 'function') ReactFlowComp = window.ReactFlow;
+    if (!ReactFlowComp) ReactFlowComp = ReactFlow;
     console.debug('createMindmap: chosen ReactFlow component type=', typeof ReactFlowComp, ReactFlowComp && (ReactFlowComp.name || ReactFlowComp.displayName || '[function]'));
-    if (ReactFlowComp) ReactFlow = ReactFlowComp;
+    ReactFlow = ReactFlowComp;
 
     // Walk the provided mindmap tree and build nodes/edges arrays suitable for layout
     function walkTree(node, parentId = null, all = { nodes: [], edges: [] }) {
