@@ -213,14 +213,24 @@
   {{ end }}
 
   {{/* NAVIGATION ENTRE CHAPITRES */}}
+  {{ $current := . }}
+  {{ $chapitres := sort .Parent.Pages "Params.numero" }}
+  {{ $prev := nil }}
+  {{ $next := nil }}
+  {{ range $i, $chap := $chapitres }}
+    {{ if eq $chap.File.Path $current.File.Path }}
+      {{ if gt $i 0 }}{{ $prev = index $chapitres (sub $i 1) }}{{ end }}
+      {{ if lt (add $i 1) (len $chapitres) }}{{ $next = index $chapitres (add $i 1) }}{{ end }}
+    {{ end }}
+  {{ end }}
   <nav class="chapitre-nav" aria-label="Navigation entre chapitres">
-    {{ with .PrevInSection }}
+    {{ with $prev }}
     <a href="{{ .RelPermalink }}" class="chapitre-nav-prev">
       ← Ch.{{ .Params.numero }} : {{ .Title }}
     </a>
     {{ end }}
     <a href="{{ .Parent.RelPermalink }}" class="chapitre-nav-up">↑ Retour au niveau</a>
-    {{ with .NextInSection }}
+    {{ with $next }}
     <a href="{{ .RelPermalink }}" class="chapitre-nav-next">
       Ch.{{ .Params.numero }} : {{ .Title }} →
     </a>
