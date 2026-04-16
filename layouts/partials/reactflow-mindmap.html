@@ -40,6 +40,25 @@
       flowGlobalDefault
     ].filter(Boolean);
 
+    // Prefer explicit `ReactFlow` export found on candidate modules before running heuristics
+    let explicitReactFlowFromCandidates = null;
+    for (const c of candidates) {
+      try {
+        if (c && typeof c.ReactFlow === 'function') {
+          explicitReactFlowFromCandidates = c.ReactFlow;
+          break;
+        }
+        if (c && c.default && typeof c.default.ReactFlow === 'function') {
+          explicitReactFlowFromCandidates = c.default.ReactFlow;
+          break;
+        }
+        if (c && typeof c.default === 'function' && /reactflow|ReactFlow/i.test(String(c.default))) {
+          explicitReactFlowFromCandidates = c.default;
+          break;
+        }
+      } catch (e) {}
+    }
+
     const ReactFlowProvider =
       window.ReactFlowProvider ||
       flowCore?.ReactFlowProvider ||
@@ -143,10 +162,10 @@
           if (fn.name && String(fn.name).toLowerCase().includes('reactflow')) return true;
           const src = String(fn);
           // positive indicators
-          const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'react-flow__', 'ReactFlowProvider', 'fitViewOnInit', 'react-flow__renderer'];
+          const indicators = ['nodes', 'edges', 'fitView', 'fitViewOptions', 'nodesDraggable', 'nodesConnectable', 'attributionPosition', 'ReactFlowProvider', 'fitViewOnInit', 'react-flow__renderer', 'react-flow__viewport', 'react-flow__nodes'];
           if (indicators.some(s => src.indexOf(s) !== -1)) return true;
-          // negative indicators that strongly suggest an edge/node renderer
-          if (/labelX|labelY|markerEnd|markerStart|interactionWidth|edge-interaction|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge/i.test(src)) return false;
+          // negative indicators that strongly suggest an edge/node renderer or panel helper
+          if (/react-flow__panel|labelX|labelY|markerEnd|markerStart|interactionWidth|edge-interaction|edge-path|EdgeLabelRenderer|BaseEdge|BezierEdge/i.test(src)) return false;
         } catch (e) {}
         return false;
       }
@@ -227,7 +246,27 @@
       else if (flowCoreDefault && typeof flowCoreDefault.ReactFlow === 'function') explicitReactFlow = flowCoreDefault.ReactFlow;
     } catch (e) {}
 
-    const finalReactFlow = explicitReactFlow || resolvedReactFlowCandidate;
+    let finalReactFlow = explicitReactFlow || explicitReactFlowFromCandidates || resolvedReactFlowCandidate;
+
+    // Strong canonical preference: prefer the canonical UMD globals when available
+    try {
+      if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
+        finalReactFlow = window.ReactFlowCore.ReactFlow;
+        console.debug('getReactFlowGlobals: forcing ReactFlow from window.ReactFlowCore.ReactFlow');
+      } else if (window.ReactFlow && typeof window.ReactFlow.ReactFlow === 'function') {
+        finalReactFlow = window.ReactFlow.ReactFlow;
+        console.debug('getReactFlowGlobals: forcing ReactFlow from window.ReactFlow.ReactFlow');
+      } else if (typeof window.ReactFlow === 'function') {
+        finalReactFlow = window.ReactFlow;
+        console.debug('getReactFlowGlobals: forcing ReactFlow from window.ReactFlow');
+      } else if (flowCore && typeof flowCore.ReactFlow === 'function') {
+        finalReactFlow = flowCore.ReactFlow;
+        console.debug('getReactFlowGlobals: forcing ReactFlow from flowCore.ReactFlow');
+      }
+    } catch (e) {
+      // ignore
+    }
+
     const dagreLib = window.dagre || window.dagreLib || null;
     const React = window.React || null;
     const ReactDOM = window.ReactDOM || null;
@@ -242,10 +281,30 @@
     const dagreLib = globals.dagreLib || window.dagre || window.dagreLib || null;
     const React = globals.React || window.React || null;
     const ReactDOM = globals.ReactDOM || window.ReactDOM || null;
-    const ReactFlow = globals.ReactFlow || window.ReactFlow || null;
+    let ReactFlow = globals.ReactFlow || window.ReactFlow || null;
     const ReactFlowProvider = globals.ReactFlowProvider || window.ReactFlowProvider || null;
     const nodeWidth = (mindmapConfig && mindmapConfig.nodeWidth) || 220;
     const nodeHeight = (mindmapConfig && mindmapConfig.nodeHeight) || 80;
+
+    // Force selection of the real ReactFlow component from known globals/candidates
+    let ReactFlowComp = ReactFlow;
+    try {
+      if (typeof window.ReactFlow === 'function') {
+        ReactFlowComp = window.ReactFlow;
+      } else if (window.ReactFlow && typeof window.ReactFlow.ReactFlow === 'function') {
+        ReactFlowComp = window.ReactFlow.ReactFlow;
+      } else if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') {
+        ReactFlowComp = window.ReactFlowCore.ReactFlow;
+      } else if (globals.flowCore && typeof globals.flowCore.ReactFlow === 'function') {
+        ReactFlowComp = globals.flowCore.ReactFlow;
+      } else if (globals.flowCore && globals.flowCore.default && typeof globals.flowCore.default === 'function') {
+        ReactFlowComp = globals.flowCore.default;
+      } else if (globals.flowGlobal && typeof globals.flowGlobal.ReactFlow === 'function') {
+        ReactFlowComp = globals.flowGlobal.ReactFlow;
+      }
+    } catch (e) {}
+    console.debug('createMindmap: chosen ReactFlow component type=', typeof ReactFlowComp, ReactFlowComp && (ReactFlowComp.name || ReactFlowComp.displayName || '[function]'));
+    if (ReactFlowComp) ReactFlow = ReactFlowComp;
 
     // Walk the provided mindmap tree and build nodes/edges arrays suitable for layout
     function walkTree(node, parentId = null, all = { nodes: [], edges: [] }) {
