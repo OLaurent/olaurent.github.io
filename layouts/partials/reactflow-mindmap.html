@@ -501,14 +501,23 @@
     console.debug('createMindmap: chosen ReactFlow component type=', typeof ReactFlowComp, ReactFlowComp && (ReactFlowComp.name || ReactFlowComp.displayName || '[function]'));
     ReactFlow = ReactFlowComp;
 
-    // If we still don't have a usable function component, try loading an ESM bundle dynamically as a last resort
-    function isFunctionLike(x) { return typeof x === 'function'; }
-    function looksLikeReactComponent(fn) {
-      if (typeof fn !== 'function') return false;
-      const name = fn.name || fn.displayName || '';
+    // If we still don't have a usable React component, try loading an ESM bundle dynamically as a last resort
+    function isComponentLike(x) {
+      if (typeof x === 'function') return true;
+      if (x && typeof x === 'object') {
+        return typeof x.$$typeof !== 'undefined' && typeof x.render === 'function';
+      }
+      return false;
+    }
+    function looksLikeReactComponent(component) {
+      if (!isComponentLike(component)) return false;
+      if (typeof component === 'object') {
+        return true;
+      }
+      const name = component.name || component.displayName || '';
       if (/^[A-Z]/.test(name)) return true; // PascalCase component names
       try {
-        const src = String(fn);
+        const src = String(component);
         if (/createElement|React\.createElement|useState\(|useEffect\(|useRef\(|forwardRef\(|memo\(/.test(src)) return true;
         // presence of 'props' or 'children' is a weak signal but useful
         if (/props|children/.test(src) && !/getRectOfNodes|getNodesBounds|applyNodeChanges|applyChanges|reduce\(/.test(src)) return true;
@@ -543,14 +552,14 @@
           const mod = await import(u);
           if (mod) {
             const candidate = mod.ReactFlow || mod.default || mod;
-            if (isFunctionLike(candidate) || (candidate && isFunctionLike(candidate.ReactFlow))) {
-              if (candidate.ReactFlow && isFunctionLike(candidate.ReactFlow)) {
+            if (isComponentLike(candidate) || (candidate && isComponentLike(candidate.ReactFlow))) {
+              if (candidate.ReactFlow && isComponentLike(candidate.ReactFlow)) {
                 ReactFlow = candidate.ReactFlow;
                 if (!ReactFlowProvider && candidate.ReactFlowProvider) ReactFlowProvider = candidate.ReactFlowProvider;
                 console.debug('createMindmap: loaded ReactFlow from ESM', u);
                 return true;
               }
-              if (isFunctionLike(candidate)) {
+              if (isComponentLike(candidate)) {
                 ReactFlow = candidate;
                 if (!ReactFlowProvider && mod.ReactFlowProvider) ReactFlowProvider = mod.ReactFlowProvider;
                 console.debug('createMindmap: loaded ReactFlow (default) from ESM', u);
@@ -684,9 +693,9 @@
     }
 
     // If candidate is not a clear React component, try ESM dynamic import before mounting
-    if (!(isFunctionLike(ReactFlow) && looksLikeReactComponent(ReactFlow))) {
+    if (!(isComponentLike(ReactFlow) && looksLikeReactComponent(ReactFlow))) {
       tryLoadEsmFallback().then(ok => {
-        if (ok && isFunctionLike(ReactFlow) && looksLikeReactComponent(ReactFlow)) {
+        if (ok && isComponentLike(ReactFlow) && looksLikeReactComponent(ReactFlow)) {
           mountFlow();
         } else {
           // As last resort, attempt to unwrap module-like object to a function and mount
@@ -696,7 +705,7 @@
               else if (ReactFlow.default && typeof ReactFlow.default === 'function') ReactFlow = ReactFlow.default;
             }
           } catch (e) {}
-          if (isFunctionLike(ReactFlow) && looksLikeReactComponent(ReactFlow)) mountFlow();
+          if (isComponentLike(ReactFlow) && looksLikeReactComponent(ReactFlow)) mountFlow();
           else {
             // Provide a clear in-page error and useful debug info
             const details = `ReactFlow type: ${typeof ReactFlow}\nKeys: ${ReactFlow && typeof ReactFlow === 'object' ? Object.keys(ReactFlow).slice(0,40).join(', ') : 'N/A'}`;
@@ -709,7 +718,7 @@
 
     // otherwise mount immediately
     // Double-check component looks like a React component before mounting
-    if (looksLikeReactComponent(ReactFlow)) {
+    if (isComponentLike(ReactFlow) && looksLikeReactComponent(ReactFlow)) {
       mountFlow();
     } else {
       const details = `ReactFlow type: ${typeof ReactFlow}\nFunction name: ${ReactFlow && ReactFlow.name ? ReactFlow.name : 'N/A'}\nKeys: ${ReactFlow && typeof ReactFlow === 'object' ? Object.keys(ReactFlow).slice(0,40).join(', ') : 'N/A'}`;
