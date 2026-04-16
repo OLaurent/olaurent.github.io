@@ -214,10 +214,24 @@
 
     // Resolve top-level ReactFlow candidate and return runtime globals
     const resolvedReactFlowCandidate = resolveReactFlow(flowCore) || resolveReactFlow(flowCoreDefault) || resolveReactFlow(flowGlobal) || resolveReactFlow(flowGlobalDefault) || flowCore?.ReactFlow || flowGlobal?.ReactFlow || null;
+
+    // Prefer explicit globals when available (most reliable)
+    let explicitReactFlow = null;
+    try {
+      if (typeof window.ReactFlow === 'function') explicitReactFlow = window.ReactFlow;
+      else if (window.ReactFlow && typeof window.ReactFlow.ReactFlow === 'function') explicitReactFlow = window.ReactFlow.ReactFlow;
+      else if (window.ReactFlow && window.ReactFlow.default && typeof window.ReactFlow.default === 'function') explicitReactFlow = window.ReactFlow.default;
+      else if (window.ReactFlowCore && typeof window.ReactFlowCore.ReactFlow === 'function') explicitReactFlow = window.ReactFlowCore.ReactFlow;
+      else if (window.ReactFlowCore && window.ReactFlowCore.default && typeof window.ReactFlowCore.default === 'function') explicitReactFlow = window.ReactFlowCore.default;
+      else if (flowCore && typeof flowCore.ReactFlow === 'function') explicitReactFlow = flowCore.ReactFlow;
+      else if (flowCoreDefault && typeof flowCoreDefault.ReactFlow === 'function') explicitReactFlow = flowCoreDefault.ReactFlow;
+    } catch (e) {}
+
+    const finalReactFlow = explicitReactFlow || resolvedReactFlowCandidate;
     const dagreLib = window.dagre || window.dagreLib || null;
     const React = window.React || null;
     const ReactDOM = window.ReactDOM || null;
-    const ReactFlow = resolvedReactFlowCandidate;
+    const ReactFlow = finalReactFlow;
 
     return { React, ReactDOM, ReactFlow, ReactFlowProvider, dagreLib, flowCore, flowGlobal };
   }
