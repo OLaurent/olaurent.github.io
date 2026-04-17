@@ -25,7 +25,7 @@
 </div>
 
 <div class="mathalea-modal" id="mathalea-modal" aria-hidden="true" style="display:none;">
-  <div class="mathalea-modal-backdrop" data-mathalea-close></div>
+  <div class="mathalea-modal-backdrop"></div>
   <div class="mathalea-modal-content" role="dialog" aria-modal="true" aria-label="Exercice MathAlea">
     <button type="button" class="mathalea-modal-close" data-mathalea-close aria-label="Fermer">×</button>
     <iframe id="mathalea-modal-frame" class="mathalea-modal-frame" src="" frameborder="0" allowfullscreen></iframe>
@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
       openModal(btn.getAttribute('data-mathalea-focus'));
     });
   });
+  // Seul le bouton × ferme la modale
   modal.querySelectorAll('[data-mathalea-close]').forEach(function(el) {
     el.addEventListener('click', closeModal);
   });

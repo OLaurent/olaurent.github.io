@@ -131,32 +131,37 @@
 
   {{/* LEGACY — ARCHIVES ANNÉES PRÉCÉDENTES */}}
   {{ $legacy := where .Pages "Params.annee" "ne" $anneeEnCours }}
-  {{ if $legacy }}
-  <div class="legacy-section">
-    <button class="btn-gold btn-legacy" id="toggle-legacy" aria-expanded="false" aria-controls="legacy-content">
-      🗄️ Archives Années Précédentes
-    </button>
-    <div class="legacy-content" id="legacy-content" hidden>
-      {{ range ($legacy | sort "Params.annee" | sort "Params.numero") | group "Params.annee" }}
-      <details class="legacy-year">
-        <summary>{{ .Key }}</summary>
-        <div class="legacy-chapitres">
-          {{ range .Pages }}
-            {{ partial "chapter-card.html" . }}
-          {{ end }}
-        </div>
-      </details>
-      {{ end }}
+  {{ if and $legacy (gt (len $legacy) 0) (index (first 1 $legacy) 0).Params.annee }}
+    <div class="legacy-section">
+      <button class="btn-gold btn-legacy" id="toggle-legacy" aria-expanded="false" aria-controls="legacy-content">
+        🗄️ Archives Années Précédentes
+      </button>
+      <div class="legacy-content" id="legacy-content" hidden>
+        {{ $legacySorted := $legacy }}
+        {{ if (gt (len $legacy) 1) }}
+          {{ $legacySorted = sort $legacy "Params.annee" }}
+          {{ $legacySorted = sort $legacySorted "Params.numero" }}
+        {{ end }}
+        {{ range ($legacySorted | group "Params.annee") }}
+        <details class="legacy-year">
+          <summary>{{ .Key }}</summary>
+          <div class="legacy-chapitres">
+            {{ range .Pages }}
+              {{ partial "chapter-card.html" . }}
+            {{ end }}
+          </div>
+        </details>
+        {{ end }}
+      </div>
     </div>
-  </div>
-  <script>
-    document.getElementById('toggle-legacy').addEventListener('click', function () {
-      const content = document.getElementById('legacy-content');
-      const expanded = this.getAttribute('aria-expanded') === 'true';
-      this.setAttribute('aria-expanded', String(!expanded));
-      content.hidden = expanded;
-    });
-  </script>
+    <script>
+      document.getElementById('toggle-legacy').addEventListener('click', function () {
+        const content = document.getElementById('legacy-content');
+        const expanded = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', String(!expanded));
+        content.hidden = expanded;
+      });
+    </script>
   {{ end }}
 
 </div>
