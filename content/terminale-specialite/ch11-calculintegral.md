@@ -23,7 +23,7 @@ videos:
 
 mathalea:
   - label: "MathAlea - Exercice"
-    exercices: "id=TSA8-10&nb=2&id=TSA8-20&id=TSA8-21&id=TSA8-22&s=false&i=1&v=eleve"
+    exercices: "id=TSA8-10&nb=2&s=false&i=1&v=eleve&id=TSA8-20&s=false&i=1&v=eleve&id=TSA8-21&s=false&i=1&v=eleve&id=TSA8-22&s=false&i=1&v=eleve"
         
 evaluations:
   - label: "DS n°X — Sujet"
